@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "../components/Button";
 import { Chip } from "../components/Chip";
 import { ProgressSteps } from "../components/ProgressSteps";
+import { useDraft } from "../context/DraftContext";
 import "./SurveyScreen.css";
 
 const INTEREST_TAGS = ["카페", "여행", "공연", "운동", "독서", "게임", "사진", "봉사활동", "스터디", "드라이브"];
@@ -12,17 +13,14 @@ const MAX_FOOD = 3;
 
 /** 문서02 §4.3: 한 화면에 3~5문항, Chip 최대선택수 라벨 노출, 자동저장은 조용히 헤더에만. */
 export function SurveyInterestsScreen({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
-  const [interests, setInterests] = useState<string[]>([]);
-  const [food, setFood] = useState<string[]>([]);
+  const { draft, updateDraft } = useDraft();
   const [saved, setSaved] = useState(true);
 
-  const toggle = (list: string[], setList: (v: string[]) => void, max: number, tag: string) => {
+  const toggle = (key: "interests" | "food", max: number, tag: string) => {
+    const list = draft[key];
+    const next = list.includes(tag) ? list.filter((t) => t !== tag) : list.length < max ? [...list, tag] : list;
+    updateDraft({ [key]: next });
     setSaved(false);
-    if (list.includes(tag)) {
-      setList(list.filter((t) => t !== tag));
-    } else if (list.length < max) {
-      setList([...list, tag]);
-    }
     window.setTimeout(() => setSaved(true), 400);
   };
 
@@ -45,9 +43,9 @@ export function SurveyInterestsScreen({ onNext, onBack }: { onNext: () => void; 
             <Chip
               key={tag}
               label={tag}
-              selected={interests.includes(tag)}
-              onToggle={() => toggle(interests, setInterests, MAX_INTERESTS, tag)}
-              disabled={!interests.includes(tag) && interests.length >= MAX_INTERESTS}
+              selected={draft.interests.includes(tag)}
+              onToggle={() => toggle("interests", MAX_INTERESTS, tag)}
+              disabled={!draft.interests.includes(tag) && draft.interests.length >= MAX_INTERESTS}
             />
           ))}
         </div>
@@ -63,9 +61,9 @@ export function SurveyInterestsScreen({ onNext, onBack }: { onNext: () => void; 
             <Chip
               key={tag}
               label={tag}
-              selected={food.includes(tag)}
-              onToggle={() => toggle(food, setFood, MAX_FOOD, tag)}
-              disabled={!food.includes(tag) && food.length >= MAX_FOOD}
+              selected={draft.food.includes(tag)}
+              onToggle={() => toggle("food", MAX_FOOD, tag)}
+              disabled={!draft.food.includes(tag) && draft.food.length >= MAX_FOOD}
             />
           ))}
         </div>
@@ -75,7 +73,7 @@ export function SurveyInterestsScreen({ onNext, onBack }: { onNext: () => void; 
         <Button variant="ghost" onClick={onBack}>
           이전
         </Button>
-        <Button variant="primary" disabled={interests.length === 0} onClick={onNext}>
+        <Button variant="primary" disabled={draft.interests.length === 0} onClick={onNext}>
           다음
         </Button>
       </div>

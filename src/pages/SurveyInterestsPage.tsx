@@ -3,5 +3,5 @@ import { SurveyInterestsScreen } from "../screens/SurveyInterestsScreen";
 
 export function SurveyInterestsPage() {
   const navigate = useNavigate();
-  return <SurveyInterestsScreen onNext={() => navigate("/review")} onBack={() => navigate("/consent")} />;
+  return <SurveyInterestsScreen onNext={() => navigate("/survey/preference")} onBack={() => navigate("/survey/basic-info")} />;
 }

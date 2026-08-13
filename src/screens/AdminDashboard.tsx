@@ -26,9 +26,9 @@ const FEATURE_FLAGS: Array<{ key: string; label: string; on: boolean }> = [
   { key: "fallback_mode", label: "비상 로컬 저장 모드", on: false },
 ];
 
-const STATUS_TONE: Record<string, "neutral" | "brass" | "warning"> = {
+const STATUS_TONE: Record<string, "neutral" | "amber" | "warning"> = {
   정상: "neutral",
-  주의: "brass",
+  주의: "amber",
   비상: "warning",
 };
 

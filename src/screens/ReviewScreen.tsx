@@ -1,18 +1,9 @@
 import { useState } from "react";
 import { Button } from "../components/Button";
+import { useDraft } from "../context/DraftContext";
 import "./ReviewScreen.css";
 
-interface DraftSummary {
-  nickname: string;
-  department: string;
-  grade: number;
-  traits: string[];
-  interests: string[];
-  instagramHandle: string;
-}
-
 interface Props {
-  draft: DraftSummary;
   onSubmitted: () => void;
 }
 
@@ -23,7 +14,8 @@ function maskHandle(handle: string) {
 }
 
 /** 문서02 §4.4: 제출 중 버튼 잠금 + ProgressCircle. 네트워크 재시도는 같은 idempotency key를 사용한다(실제 API 연동 시). */
-export function ReviewScreen({ draft, onSubmitted }: Props) {
+export function ReviewScreen({ onSubmitted }: Props) {
+  const { draft } = useDraft();
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = () => {
@@ -44,21 +36,35 @@ export function ReviewScreen({ draft, onSubmitted }: Props) {
         <dl className="review__list">
           <div>
             <dt>닉네임</dt>
-            <dd>{draft.nickname}</dd>
+            <dd>{draft.nickname || "-"}</dd>
           </div>
           <div>
             <dt>학과·학년</dt>
             <dd>
-              {draft.department} · {draft.grade}학년
+              {draft.department || "-"} · {draft.grade ? `${draft.grade}학년` : "-"}
             </dd>
           </div>
           <div>
             <dt>성격 태그</dt>
-            <dd>{draft.traits.join(", ")}</dd>
+            <dd>{draft.traits.length ? draft.traits.join(", ") : "-"}</dd>
           </div>
           <div>
             <dt>관심사</dt>
-            <dd>{draft.interests.join(", ")}</dd>
+            <dd>{draft.interests.length ? draft.interests.join(", ") : "-"}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div className="review__card">
+        <h2 className="review__card-title">상대에게 바라는 조건</h2>
+        <dl className="review__list">
+          <div>
+            <dt>희망 성별</dt>
+            <dd>{draft.seekingGender || "-"}</dd>
+          </div>
+          <div>
+            <dt>연락 스타일</dt>
+            <dd>{draft.contactStyle || "-"}</dd>
           </div>
         </dl>
       </div>
@@ -68,7 +74,7 @@ export function ReviewScreen({ draft, onSubmitted }: Props) {
         <dl className="review__list">
           <div>
             <dt>Instagram ID</dt>
-            <dd>{maskHandle(draft.instagramHandle)}</dd>
+            <dd>{draft.instagramHandle ? maskHandle(draft.instagramHandle) : "-"}</dd>
           </div>
         </dl>
         <p className="review__note">

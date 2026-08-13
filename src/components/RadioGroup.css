@@ -1,0 +1,44 @@
+.app-radio-group {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.app-radio-group__label {
+  padding: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-strong);
+}
+
+.app-radio-group__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.app-radio-group__option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--touch-min);
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.app-radio-group__option input {
+  accent-color: var(--gradient-film-start);
+}
+
+.app-radio-group__option.is-selected {
+  border-color: var(--gradient-film-start);
+  background: var(--color-photo-paper);
+  font-weight: 700;
+}

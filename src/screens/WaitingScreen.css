@@ -28,7 +28,7 @@
 .waiting__ticket-label {
   font-size: 11px;
   letter-spacing: 0.08em;
-  color: var(--color-brass);
+  color: var(--color-text-muted);
   font-weight: 700;
 }
 
@@ -94,6 +94,61 @@
   font-size: 12px;
   color: var(--color-text-muted);
   line-height: 1.6;
+}
+
+/*
+ * 문서02 §2 Liquid Glass 미사용 원칙에 맞춰 backdrop-filter 없이 솔리드 surface로 띄운다.
+ * "튀어오르는" 느낌은 배경 블러가 아니라 framer-motion 스프링 진입으로 만든다.
+ */
+.waiting__found-banner {
+  position: absolute;
+  left: var(--edge-padding);
+  right: var(--edge-padding);
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border: none;
+  border-radius: var(--radius-result);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-result);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.waiting__found-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gradient-film-start), var(--gradient-film-end));
+}
+
+.waiting__found-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.waiting__found-text strong {
+  font-size: 14px;
+  color: var(--color-text-strong);
+}
+
+.waiting__found-text span {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.waiting__found-cta {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gradient-film-start);
 }
 
 @media (prefers-reduced-motion: reduce) {

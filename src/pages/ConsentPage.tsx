@@ -3,5 +3,5 @@ import { ConsentScreen } from "../screens/ConsentScreen";
 
 export function ConsentPage() {
   const navigate = useNavigate();
-  return <ConsentScreen onSubmit={() => navigate("/survey/interests")} />;
+  return <ConsentScreen onSubmit={() => navigate("/survey/basic-info")} />;
 }

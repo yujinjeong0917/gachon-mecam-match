@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import "./Badge.css";
 
 interface Props {
-  tone?: "neutral" | "brass" | "warning";
+  tone?: "neutral" | "amber" | "warning";
   children: ReactNode;
 }
 

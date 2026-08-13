@@ -1,4 +1,6 @@
 .app-button {
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -11,11 +13,7 @@
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  transition: opacity 150ms ease, transform 100ms ease;
-}
-
-.app-button:active:not(:disabled) {
-  transform: scale(0.99);
+  transition: opacity 150ms ease;
 }
 
 .app-button:focus-visible {
@@ -26,6 +24,28 @@
 .app-button--primary {
   color: #fffdf8;
   background: linear-gradient(135deg, var(--gradient-film-start), var(--gradient-film-end));
+}
+
+/* React Bits류 shine-sweep. hover에서만 한 번 지나가고, 지속 반복 애니메이션은 아니다(문서02 §7 반복 점멸 금지). */
+.app-button--primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 650ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.app-button--primary:hover::after {
+  transform: translateX(120%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-button--primary::after {
+    transition: none;
+    display: none;
+  }
 }
 
 .app-button--ghost {

@@ -72,7 +72,7 @@
 }
 
 .admin__health-dot--warn {
-  background: var(--color-brass);
+  background: var(--color-text-muted);
 }
 
 .admin__next-run {

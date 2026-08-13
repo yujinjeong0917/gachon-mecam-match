@@ -13,10 +13,10 @@
   background: var(--color-surface);
 }
 
-.app-badge--brass {
-  color: #6b5636;
-  background: #f2e9d6;
-  border-color: var(--color-brass);
+.app-badge--amber {
+  color: var(--color-text-strong);
+  background: var(--color-surface);
+  border-color: var(--color-text-strong);
 }
 
 .app-badge--warning {
