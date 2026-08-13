@@ -1,0 +1,67 @@
+.app-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0 20px;
+  border-radius: var(--radius-field);
+  border: 1px solid transparent;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 150ms ease, transform 100ms ease;
+}
+
+.app-button:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.app-button:focus-visible {
+  outline: 2px solid var(--gradient-film-start);
+  outline-offset: 2px;
+}
+
+.app-button--primary {
+  color: #fffdf8;
+  background: linear-gradient(135deg, var(--gradient-film-start), var(--gradient-film-end));
+}
+
+.app-button--ghost {
+  color: var(--color-text-strong);
+  background: transparent;
+  border-color: var(--color-border);
+}
+
+.app-button--danger-ghost {
+  color: #a24a3c;
+  background: transparent;
+  border-color: var(--color-border);
+}
+
+.app-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.app-button__spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: #fff;
+  animation: app-button-spin 700ms linear infinite;
+}
+
+@keyframes app-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-button__spinner {
+    animation: none;
+  }
+}

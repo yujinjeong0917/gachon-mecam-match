@@ -1,0 +1,73 @@
+.consent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px var(--edge-padding) 28px;
+}
+
+.consent__title {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.consent__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-strong);
+}
+
+.consent__row input {
+  margin-top: 2px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.consent__row--optional {
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
+.consent__accordion {
+  border-top: 1px solid var(--color-border);
+  padding-top: 10px;
+}
+
+.consent__accordion-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  padding: 8px 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.consent__accordion-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  padding-bottom: 8px;
+}
+
+.consent__accordion-body p {
+  margin: 0;
+}
+
+.consent > .app-button {
+  margin-top: auto;
+}

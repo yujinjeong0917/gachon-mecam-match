@@ -1,0 +1,37 @@
+.bottom-sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(39, 35, 31, 0.4);
+  display: flex;
+  align-items: flex-end;
+  z-index: 20;
+  border-radius: inherit;
+}
+
+.bottom-sheet {
+  width: 100%;
+  max-height: 80%;
+  overflow-y: auto;
+  background: var(--color-surface);
+  border-radius: 20px 20px 0 0;
+  padding: 12px 20px 24px;
+  box-shadow: var(--shadow-result);
+}
+
+.bottom-sheet:focus {
+  outline: none;
+}
+
+.bottom-sheet__grabber {
+  width: 36px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-border);
+  margin: 0 auto 16px;
+}
+
+.bottom-sheet__title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 700;
+}

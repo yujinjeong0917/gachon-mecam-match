@@ -1,0 +1,63 @@
+@import "./tokens.css";
+@import "./fonts.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: #e7e0d3;
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: var(--color-text-strong);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 포인트로 쓰는 강조 서체. 로고, 큰 헤드라인, 결과 점수처럼 시선이 먼저 가는 자리에만 좁게 적용한다. */
+.font-accent {
+  font-family: var(--font-accent);
+}
+
+button {
+  font-family: inherit;
+}
+
+/* better-typography 원칙 11: 변하는 숫자는 자릿수가 흔들리지 않게 */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* better-typography 원칙 10: 제목은 균형 있게, 설명문은 마지막 줄에 한 단어만 남지 않게 */
+h1,
+h2 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* 문서02 §7: 그라데이션은 CSS 변수 한 세트, 최대 두 색만 사용 */
+.gradient-fill {
+  background: linear-gradient(135deg, var(--gradient-film-start), var(--gradient-film-end));
+}
+
+/* 문서02 §7: backdrop-filter, displacement, 색수차, 지속 애니메이션 금지.
+   grain은 2~3% 수준의 반복 texture로만 제한 (feTurbulence, 이미지 에셋 아님) */
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: multiply;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

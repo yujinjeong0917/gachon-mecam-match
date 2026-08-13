@@ -1,0 +1,162 @@
+.admin {
+  display: flex;
+  width: 1200px;
+  height: 800px;
+  background: var(--color-photo-paper);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.admin__sidebar {
+  width: 76px;
+  background: var(--color-surface);
+  border-top: 2px solid var(--color-walnut);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 8px;
+  gap: 6px;
+}
+
+.admin__nav-item {
+  border: none;
+  background: none;
+  border-radius: 8px;
+  padding: 10px 4px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.admin__nav-item.is-active {
+  background: var(--color-photo-paper);
+  color: var(--color-text-strong);
+  font-weight: 700;
+}
+
+.admin__main {
+  flex: 1;
+  padding: 20px 28px;
+  overflow-y: auto;
+}
+
+.admin__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.admin__health {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.admin__health-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-left: 10px;
+}
+
+.admin__health-dot:first-child {
+  margin-left: 0;
+}
+
+.admin__health-dot--ok {
+  background: #5a8c6a;
+}
+
+.admin__health-dot--warn {
+  background: var(--color-brass);
+}
+
+.admin__next-run {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.admin__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.admin__stat-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin__stat-value {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.admin__stat-label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.admin__queue,
+.admin__flags {
+  margin-bottom: 24px;
+}
+
+.admin__queue h2,
+.admin__flags h2 {
+  font-size: 14px;
+  margin: 0 0 10px;
+}
+
+.admin__queue table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.admin__queue th,
+.admin__queue td {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin__queue th {
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.admin__queue tr:last-child td {
+  border-bottom: none;
+}
+
+.admin__flag-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.admin__flag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+}

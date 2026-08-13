@@ -1,0 +1,103 @@
+.result {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px var(--edge-padding) 28px;
+}
+
+.result__lead {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--color-text-strong);
+}
+
+.result__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border: 1.5px solid var(--color-walnut);
+  border-radius: var(--radius-result);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-result);
+  padding: 28px 20px 24px;
+}
+
+/* 무한이 공식 도안을 나중에 합성할 자리. AI로 캐릭터를 생성하지 않는다. */
+.result__stamp-slot {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px dashed var(--color-brass);
+}
+
+.result__score-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.result__score {
+  font-family: var(--font-accent);
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1.1;
+  background: linear-gradient(135deg, var(--gradient-film-start), var(--gradient-film-end));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.result__partner {
+  margin-top: 12px;
+}
+
+.result__partner-name {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.result__partner-meta {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.result__tags {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.result__tag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  font-size: 12px;
+  color: var(--color-text-strong);
+}
+
+.result__activity {
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.result__one-liner {
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--color-text-strong);
+}

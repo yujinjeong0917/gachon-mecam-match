@@ -1,0 +1,24 @@
+/* 문서 02 "02. UI·UX 설계 | SEED + Minimal Gradient" §1 시각 토큰 그대로 옮김 */
+:root {
+  --color-photo-paper: #f4efe6; /* 전체 배경 */
+  --color-surface: #fffdf8; /* 폼·일반 카드 */
+  --color-walnut: #5b4032; /* 부스 외장, 티켓·결과 프레임만 */
+  --gradient-film-start: #6076a3;
+  --gradient-film-end: #c77e70;
+  --color-brass: #b69a66; /* 작은 명판·구분점 */
+  --color-border: #dcd3c7;
+  --color-text-strong: #27231f;
+  --color-text-muted: #756b61;
+  --shadow-result: 0 8px 28px rgba(58, 42, 31, 0.12);
+
+  --radius-field: 8px;
+  --radius-card: 12px;
+  --radius-result: 16px;
+
+  --touch-min: 44px;
+  --content-max-width: 480px;
+  --edge-padding: 20px;
+
+  --font-body: "YK Green Forest", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+  --font-accent: "KERIS Kedu", var(--font-body);
+}

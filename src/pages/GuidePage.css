@@ -1,0 +1,46 @@
+.guide-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.guide-page__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 20px;
+  background: #2a2620;
+}
+
+.guide-page__home-link {
+  color: #cfc6b8;
+  font-size: 12px;
+  margin-right: 10px;
+  text-decoration: none;
+}
+
+.guide-page__nav button {
+  border: 1px solid #453f36;
+  background: none;
+  color: #cfc6b8;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.guide-page__nav button.is-active {
+  background: #fffdf8;
+  color: #27231f;
+  border-color: transparent;
+  font-weight: 700;
+}
+
+.guide-page__stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}

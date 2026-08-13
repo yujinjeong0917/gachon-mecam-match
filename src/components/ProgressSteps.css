@@ -1,0 +1,36 @@
+.progress-steps__row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.progress-steps__count {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-strong);
+}
+
+.progress-steps__label {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.progress-steps__track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.progress-steps__fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gradient-film-start), var(--gradient-film-end));
+  transition: width 200ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-steps__fill {
+    transition: none;
+  }
+}

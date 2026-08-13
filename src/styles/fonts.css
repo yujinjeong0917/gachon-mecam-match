@@ -1,0 +1,40 @@
+/*
+ * 본문: 유한킴벌리 푸른숲체 (무료 상업용, 임베딩 허용 — 2026-06-22 공개)
+ * 출처: https://www.yuhan-kimberly.co.kr/Society/woopoopoofont
+ * 파일: Wheelman-v2/Corporation_Fonts 미러(jsdelivr, woff2) — 공식 사이트가 서버 요청을 막아 직접 미러링된 배포본을 사용
+ */
+@font-face {
+  font-family: "YK Green Forest";
+  src: url("https://cdn.jsdelivr.net/gh/Wheelman-v2/Corporation_Fonts/Yuhan/YK_Green_Forest_Light.woff2") format("woff2");
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: "YK Green Forest";
+  src: url("https://cdn.jsdelivr.net/gh/Wheelman-v2/Corporation_Fonts/Yuhan/YK_Green_Forest_Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "YK Green Forest";
+  src: url("https://cdn.jsdelivr.net/gh/Wheelman-v2/Corporation_Fonts/Yuhan/YK_Green_Forest_Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+/*
+ * 포인트(강조): 케리스 케듀체. 사용자 Downloads 폴더에 설치된 otf를
+ * fontTools로 woff2 변환해 /public/fonts에 넣었다(better-typography 원칙 1: 웹에는 woff2).
+ */
+@font-face {
+  font-family: "KERIS Kedu";
+  src: url("/fonts/KERISKEDU-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "KERIS Kedu";
+  src: url("/fonts/KERISKEDU-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}

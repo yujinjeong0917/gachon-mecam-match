@@ -1,0 +1,14 @@
+.participant-layout {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.participant-layout__page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}

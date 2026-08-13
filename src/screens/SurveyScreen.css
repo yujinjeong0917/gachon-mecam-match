@@ -1,0 +1,60 @@
+.survey {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px var(--edge-padding) 16px;
+}
+
+.survey__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.survey__header .progress-steps {
+  flex: 1;
+}
+
+.survey__saved {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.survey__field-group {
+  margin-bottom: 28px;
+}
+
+.survey__field-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.survey__field-heading h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.survey__max-label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.survey__chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.survey__footer {
+  margin-top: auto;
+  display: flex;
+  gap: 10px;
+  padding-top: 12px;
+}

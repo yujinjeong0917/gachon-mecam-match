@@ -1,0 +1,30 @@
+.app-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--touch-min);
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-strong);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.app-chip:focus-visible {
+  outline: 2px solid var(--gradient-film-start);
+  outline-offset: 2px;
+}
+
+.app-chip.is-selected {
+  border-color: transparent;
+  color: #fffdf8;
+  background: linear-gradient(135deg, var(--gradient-film-start), var(--gradient-film-end));
+}
+
+.app-chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
