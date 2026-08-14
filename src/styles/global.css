@@ -14,6 +14,9 @@ body {
   color: var(--color-text-strong);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* 한글은 기본적으로 음절 단위로 아무 데서나 줄바꿈되므로, 단어(공백) 단위로만 끊는다. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 /* 포인트로 쓰는 강조 서체. 로고, 큰 헤드라인, 결과 점수처럼 시선이 먼저 가는 자리에만 좁게 적용한다. */
