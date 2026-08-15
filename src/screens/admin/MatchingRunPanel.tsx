@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../../components/Button";
 
-type RunStatus = "idle" | "previewing" | "previewed" | "committing" | "committed";
+type RunStatus = "idle" | "previewing" | "previewed" | "committing" | "committed_primary" | "running_fallback" | "done";
 
 const SCORE_DISTRIBUTION: Array<[string, number]> = [
   ["50-59", 8],
@@ -17,10 +17,21 @@ const PREVIEW_RESULT = {
   unmatchedCount: 6,
 };
 
+// 대기 중 참가자의 성별·희망 성별 구성. 한쪽으로 쏠려 있으면 임계값을 낮춰도 못 맞는 사람이 남는다.
+const GENDER_BREAKDOWN = [
+  { label: "남성 희망", count: 19 },
+  { label: "여성 희망", count: 23 },
+  { label: "성별 무관", count: 3 },
+];
+
+const FALLBACK_MIN_SCORE = 35;
+const FALLBACK_MATCHED_PAIRS = 2; // 6명 미매칭 중 2쌍(4명)은 구제, 2명은 끝내 못 맞음
+
 /** 문서03 §5 POST /admin/matching-runs/preview·commit 응답 형태를 그대로 따른 모의 플로우. */
 export function MatchingRunPanel() {
   const [status, setStatus] = useState<RunStatus>("idle");
   const maxBucket = Math.max(...SCORE_DISTRIBUTION.map(([, count]) => count));
+  const genderTotal = GENDER_BREAKDOWN.reduce((sum, g) => sum + g.count, 0);
 
   const runPreview = () => {
     setStatus("previewing");
@@ -29,14 +40,49 @@ export function MatchingRunPanel() {
 
   const commit = () => {
     setStatus("committing");
-    window.setTimeout(() => setStatus("committed"), 700);
+    window.setTimeout(() => setStatus("committed_primary"), 700);
   };
+
+  useEffect(() => {
+    if (status !== "committed_primary") return;
+    if (PREVIEW_RESULT.unmatchedCount === 0) {
+      setStatus("done");
+      return;
+    }
+    // 문서 정책: 임계값을 낮춰서 미매칭자만 대상으로 자동 2차 매칭을 한 번 더 돈다.
+    const t1 = window.setTimeout(() => setStatus("running_fallback"), 500);
+    return () => window.clearTimeout(t1);
+  }, [status]);
+
+  useEffect(() => {
+    if (status !== "running_fallback") return;
+    const t = window.setTimeout(() => setStatus("done"), 900);
+    return () => window.clearTimeout(t);
+  }, [status]);
+
+  const stillUnmatched = PREVIEW_RESULT.unmatchedCount - FALLBACK_MATCHED_PAIRS * 2;
 
   return (
     <section className="matching-run">
       <div className="admin__section-head">
         <h2>매칭 실행</h2>
         <span className="admin__section-hint">1일 1회 16:00 일괄 실행 · algorithm mutual-v1.0.0</span>
+      </div>
+
+      <div className="matching-run__gender">
+        <span className="matching-run__gender-title">대기 중 희망 성별 비율</span>
+        <div className="matching-run__gender-bar">
+          {GENDER_BREAKDOWN.map((g) => (
+            <div key={g.label} className="matching-run__gender-seg" style={{ width: `${(g.count / genderTotal) * 100}%` }} title={g.label} />
+          ))}
+        </div>
+        <div className="matching-run__gender-legend">
+          {GENDER_BREAKDOWN.map((g) => (
+            <span key={g.label}>
+              {g.label} {g.count}명
+            </span>
+          ))}
+        </div>
       </div>
 
       {status === "idle" || status === "previewing" ? (
@@ -48,7 +94,7 @@ export function MatchingRunPanel() {
         </div>
       ) : null}
 
-      {status === "previewed" || status === "committing" || status === "committed" ? (
+      {status !== "idle" && status !== "previewing" ? (
         <div className="matching-run__result">
           <div className="admin__stats matching-run__stats">
             <div className="admin__stat-card">
@@ -61,7 +107,7 @@ export function MatchingRunPanel() {
             </div>
             <div className="admin__stat-card">
               <span className="admin__stat-value tabular-nums">{PREVIEW_RESULT.unmatchedCount}</span>
-              <span className="admin__stat-label">미매칭</span>
+              <span className="admin__stat-label">미매칭(1차)</span>
             </div>
           </div>
 
@@ -76,24 +122,54 @@ export function MatchingRunPanel() {
             ))}
           </div>
 
-          {status === "committed" ? (
-            <div className="matching-run__committed">
-              <span className="matching-run__committed-badge">확정 완료</span>
-              <p>참가자 상태와 Sheets outbox가 하나의 트랜잭션으로 반영됐어요.</p>
-              <Button variant="ghost" onClick={() => setStatus("idle")}>
-                되돌리기
-              </Button>
-            </div>
-          ) : (
+          {status === "previewed" ? (
             <div className="matching-run__actions">
               <Button variant="ghost" onClick={() => setStatus("idle")}>
                 다시 계산
               </Button>
-              <Button variant="primary" loading={status === "committing"} onClick={commit}>
+              <Button variant="primary" onClick={commit}>
                 이 결과로 확정하기
               </Button>
             </div>
-          )}
+          ) : null}
+
+          {status === "committing" ? (
+            <div className="matching-run__committed">
+              <p>확정하는 중이에요…</p>
+            </div>
+          ) : null}
+
+          {status === "committed_primary" || status === "running_fallback" || status === "done" ? (
+            <div className="matching-run__committed">
+              <span className="matching-run__committed-badge">1차 확정 완료 · {PREVIEW_RESULT.proposedMatchCount}쌍</span>
+              {PREVIEW_RESULT.unmatchedCount > 0 ? (
+                <p>
+                  미매칭 {PREVIEW_RESULT.unmatchedCount}명을 대상으로 임계값을 {FALLBACK_MIN_SCORE}점까지 낮춰 자동으로 한 번 더
+                  돌려요. 이미 확정된 매치는 건드리지 않아요.
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {status === "running_fallback" ? (
+            <div className="matching-run__committed matching-run__fallback">
+              <p>2차(구제) 매칭 계산 중…</p>
+            </div>
+          ) : null}
+
+          {status === "done" && PREVIEW_RESULT.unmatchedCount > 0 ? (
+            <div className="matching-run__committed matching-run__fallback">
+              <span className="matching-run__committed-badge">2차 확정 완료 · {FALLBACK_MATCHED_PAIRS}쌍 추가</span>
+              {stillUnmatched > 0 ? (
+                <p>그래도 {stillUnmatched}명은 끝내 조건이 맞는 상대가 없었어요. 운영자 화면에서 개별 안내가 필요해요.</p>
+              ) : (
+                <p>대기 중이던 전원이 매칭됐어요.</p>
+              )}
+              <Button variant="ghost" onClick={() => setStatus("idle")}>
+                되돌리기
+              </Button>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </section>

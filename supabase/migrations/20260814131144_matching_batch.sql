@@ -105,9 +105,10 @@ begin
     'score_distribution', (
       select jsonb_object_agg(bucket, cnt) from (
         select
+          -- 10점 단위로 동적 생성 (fallback pass는 min_score가 50 미만일 수 있어 50~90 고정 구간으로는 부족했다)
           case
-            when score < 60 then '50_59' when score < 70 then '60_69' when score < 80 then '70_79'
-            when score < 90 then '80_89' else '90_100'
+            when score >= 90 then '90_100'
+            else (floor(score / 10.0) * 10)::int::text || '_' || ((floor(score / 10.0) * 10)::int + 9)::text
           end as bucket,
           count(*) as cnt
         from tmp_candidates
