@@ -12,6 +12,7 @@ interface Props {
   onClose: () => void;
   officialInstagramUrl: string;
   unlockedHandle: string;
+  unlockedPhone: string;
   contactPreference: string;
 }
 
@@ -21,10 +22,10 @@ const STEPS = [
   { key: "reveal", label: "연락 정보 공개" },
 ] as const;
 
-/** 문서01 §5, 문서02 §4.7: 운영자 확인 전에는 상대 Instagram을 응답에 포함하지 않는다는 원칙을 status로 표현. */
-export function CheatkeySheet({ open, onClose, officialInstagramUrl, unlockedHandle, contactPreference }: Props) {
+/** 문서01 §5, 문서02 §4.7: 운영자 확인 전에는 상대 Instagram·전화번호를 응답에 포함하지 않는다는 원칙을 status로 표현. */
+export function CheatkeySheet({ open, onClose, officialInstagramUrl, unlockedHandle, unlockedPhone, contactPreference }: Props) {
   const [status, setStatus] = useState<Status>("locked");
-  const [copied, setCopied] = useState(false);
+  const [copiedField, setCopiedField] = useState<"handle" | "phone" | null>(null);
 
   const activeIndex = status === "locked" ? 0 : status === "waiting_for_operator" ? 1 : 2;
 
@@ -44,13 +45,13 @@ export function CheatkeySheet({ open, onClose, officialInstagramUrl, unlockedHan
     setStatus("waiting_for_operator");
   };
 
-  const handleCopy = async () => {
+  const handleCopy = async (field: "handle" | "phone", value: string) => {
     try {
-      await navigator.clipboard.writeText(unlockedHandle);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1500);
+      await navigator.clipboard.writeText(value);
+      setCopiedField(field);
+      window.setTimeout(() => setCopiedField(null), 1500);
     } catch {
-      setCopied(false);
+      setCopiedField(null);
     }
   };
 
@@ -106,8 +107,14 @@ export function CheatkeySheet({ open, onClose, officialInstagramUrl, unlockedHan
           >
             <div className="cheatkey__handle-row">
               <span className="cheatkey__handle">{unlockedHandle}</span>
-              <button type="button" className="cheatkey__copy" onClick={handleCopy}>
-                {copied ? "복사됨" : "ID 복사"}
+              <button type="button" className="cheatkey__copy" onClick={() => handleCopy("handle", unlockedHandle)}>
+                {copiedField === "handle" ? "복사됨" : "ID 복사"}
+              </button>
+            </div>
+            <div className="cheatkey__handle-row">
+              <span className="cheatkey__handle">{unlockedPhone}</span>
+              <button type="button" className="cheatkey__copy" onClick={() => handleCopy("phone", unlockedPhone)}>
+                {copiedField === "phone" ? "복사됨" : "번호 복사"}
               </button>
             </div>
             <p className="cheatkey__preference">상대는 “{contactPreference}”를 선호해요</p>

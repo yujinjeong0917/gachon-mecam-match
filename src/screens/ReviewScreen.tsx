@@ -13,6 +13,13 @@ function maskHandle(handle: string) {
   return `${handle.slice(0, 2)}${"*".repeat(Math.max(1, handle.length - 3))}${handle.slice(-1)}`;
 }
 
+/** 전화번호는 가운데 자리만 마스킹: 010-****-5678 */
+function maskPhone(phone: string) {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length < 7) return phone;
+  return `${digits.slice(0, 3)}-****-${digits.slice(-4)}`;
+}
+
 /** 문서02 §4.4: 제출 중 버튼 잠금 + ProgressCircle. 네트워크 재시도는 같은 idempotency key를 사용한다(실제 API 연동 시). */
 export function ReviewScreen({ onSubmitted }: Props) {
   const { draft } = useDraft();
@@ -76,9 +83,13 @@ export function ReviewScreen({ onSubmitted }: Props) {
             <dt>Instagram ID</dt>
             <dd>{draft.instagramHandle ? maskHandle(draft.instagramHandle) : "-"}</dd>
           </div>
+          <div>
+            <dt>전화번호</dt>
+            <dd>{draft.phoneNumber ? maskPhone(draft.phoneNumber) : "-"}</dd>
+          </div>
         </dl>
         <p className="review__note">
-          팔로우 인증이 완료되고 운영진이 확인한 뒤에만 상대 1명에게 원문 ID가 공개돼요.
+          팔로우 인증이 완료되고 운영진이 확인한 뒤에만 상대 1명에게 원문 정보가 공개돼요.
         </p>
       </div>
 

@@ -6,12 +6,13 @@ export const MOCK_DRAFT = {
   traits: ["차분함", "다정함"],
   interests: ["카페", "여행", "공연"],
   instagramHandle: "example_id",
+  phoneNumber: "010-1234-5678",
 };
 
 export const MOCK_WAITING = {
   matchingNumber: "M-027",
   recoveryCode: "482731",
-  nextMatchingAt: "10:00",
+  nextMatchingAt: "16:00",
 };
 
 export const MOCK_PARTNER = {

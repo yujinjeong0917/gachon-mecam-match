@@ -13,6 +13,7 @@ export interface DraftState {
   activities: string[];
   contactStyle: string;
   instagramHandle: string;
+  phoneNumber: string;
 }
 
 export const INITIAL_DRAFT: DraftState = {
@@ -28,6 +29,7 @@ export const INITIAL_DRAFT: DraftState = {
   activities: [],
   contactStyle: "",
   instagramHandle: "",
+  phoneNumber: "",
 };
 
 interface DraftContextValue {

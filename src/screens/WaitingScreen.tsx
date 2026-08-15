@@ -39,10 +39,10 @@ export function WaitingScreen({ matchingNumber, recoveryCode, nextMatchingAt, on
 
       <div className="waiting__status">
         <span className="waiting__pulse" aria-hidden="true" />
-        <span>5분마다 새 후보를 확인해요 · 다음 매칭 {nextMatchingAt}</span>
+        <span>오늘 {nextMatchingAt}에 한 번에 매칭을 진행해요</span>
       </div>
 
-      <p className="waiting__empty-note">아직 조건이 잘 맞는 상대를 찾지 못했어요. 다음 매칭에 다시 찾아볼게요.</p>
+      <p className="waiting__empty-note">매칭 시각이 되면 이 화면에서 바로 결과를 알려드릴게요.</p>
 
       <AnimatePresence>
         {matchFound ? (

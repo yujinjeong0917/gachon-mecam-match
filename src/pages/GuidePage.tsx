@@ -89,6 +89,7 @@ export function GuidePage() {
                     onClose={() => setCheatkeyOpen(false)}
                     officialInstagramUrl={EVENT_CONFIG.officialInstagram.url}
                     unlockedHandle="partner_id"
+                    unlockedPhone="010-1234-5678"
                     contactPreference="먼저 연락받는 걸 선호해요"
                   />
                 </>

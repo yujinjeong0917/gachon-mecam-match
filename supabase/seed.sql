@@ -55,7 +55,7 @@ begin
     insert into private.consents (participant_id, policy_version, age_18_plus, participation, profile_share, instagram_share_if_matched, analytics)
     values (v_participant, '2026-09-01', true, true, true, true, false);
 
-    insert into private.private_contacts (participant_id, event_id, instagram_handle, contact_preference)
-    values (v_participant, v_event, lower(rec->>'nickname') || '_ig', rec->>'conv');
+    insert into private.private_contacts (participant_id, event_id, instagram_handle, phone_number, contact_preference)
+    values (v_participant, v_event, lower(rec->>'nickname') || '_ig', '010-' || lpad(v_i::text, 4, '0') || '-' || lpad((v_i * 7 % 10000)::text, 4, '0'), rec->>'conv');
   end loop;
 end $$;

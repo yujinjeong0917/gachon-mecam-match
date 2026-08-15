@@ -36,7 +36,7 @@ export function MatchingRunPanel() {
     <section className="matching-run">
       <div className="admin__section-head">
         <h2>매칭 실행</h2>
-        <span className="admin__section-hint">5분 rolling batch · algorithm mutual-v1.0.0</span>
+        <span className="admin__section-hint">1일 1회 16:00 일괄 실행 · algorithm mutual-v1.0.0</span>
       </div>
 
       {status === "idle" || status === "previewing" ? (

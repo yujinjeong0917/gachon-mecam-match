@@ -32,7 +32,7 @@ export function AdminDashboard() {
             <span className="admin__health-dot admin__health-dot--warn" /> Sheets
             <span className="admin__health-dot admin__health-dot--ok" /> Sentry
           </div>
-          <span className="admin__next-run">다음 매칭 실행 09:45</span>
+          <span className="admin__next-run">오늘 매칭 실행 16:00</span>
         </header>
 
         {tab === "개요" ? <OverviewPanel /> : null}
