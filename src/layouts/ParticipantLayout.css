@@ -1,5 +1,5 @@
 .participant-layout {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11,4 +11,12 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
+}
+
+/* 실제 모바일 뷰포트에서는 목업 프레임을 감싸던 여백도 걷어내고 화면 전체를 채운다. */
+@media (max-width: 480px) {
+  .participant-layout {
+    min-height: 100dvh;
+    padding: 0;
+  }
 }
