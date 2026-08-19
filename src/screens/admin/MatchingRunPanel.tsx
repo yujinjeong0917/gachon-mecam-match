@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { Button } from "../../components/Button";
 
-type RunStatus = "idle" | "previewing" | "previewed" | "committing" | "committed_primary" | "running_fallback" | "done";
+type RunStatus =
+  | "idle"
+  | "previewing"
+  | "previewed"
+  | "committing"
+  | "committed_primary"
+  | "running_fallback"
+  | "running_rescue"
+  | "done";
 
 const SCORE_DISTRIBUTION: Array<[string, number]> = [
   ["50-59", 8],
@@ -25,11 +33,23 @@ const GENDER_BREAKDOWN = [
 ];
 
 const FALLBACK_MIN_SCORE = 35;
-const FALLBACK_MATCHED_PAIRS = 2; // 6명 미매칭 중 2쌍(4명)은 구제, 2명은 끝내 못 맞음
+const FALLBACK_MATCHED_PAIRS = 2; // 6명 미매칭 중 2쌍(4명)은 구제
+
+const RESCUE_MIN_SCORE = 30;
+const RESCUE_MATCHED_COUNT = 1; // 성비 불균형으로 혼자 남은 1명은 이미 매칭된 사람과 복수매칭(최대 2인)으로 구제
+
+// 그래도 끝내 조건이 맞는 상대가 없어 수동 매칭이 필요한 사람들.
+const MOCK_STILL_UNMATCHED = [
+  { id: "p-041", nickname: "차가운달", department: "약학과", grade: 3, seekingGender: "여성" },
+  { id: "p-067", nickname: "늦은오후", department: "치위생학과", grade: 2, seekingGender: "남성" },
+];
 
 /** 문서03 §5 POST /admin/matching-runs/preview·commit 응답 형태를 그대로 따른 모의 플로우. */
 export function MatchingRunPanel() {
   const [status, setStatus] = useState<RunStatus>("idle");
+  const [manuallyMatched, setManuallyMatched] = useState<string[]>([]);
+  const [pendingPick, setPendingPick] = useState<string | null>(null);
+  const [notificationSent, setNotificationSent] = useState(false);
   const maxBucket = Math.max(...SCORE_DISTRIBUTION.map(([, count]) => count));
   const genderTotal = GENDER_BREAKDOWN.reduce((sum, g) => sum + g.count, 0);
 
@@ -56,17 +76,38 @@ export function MatchingRunPanel() {
 
   useEffect(() => {
     if (status !== "running_fallback") return;
+    const t = window.setTimeout(() => setStatus("running_rescue"), 900);
+    return () => window.clearTimeout(t);
+  }, [status]);
+
+  useEffect(() => {
+    if (status !== "running_rescue") return;
     const t = window.setTimeout(() => setStatus("done"), 900);
     return () => window.clearTimeout(t);
   }, [status]);
 
-  const stillUnmatched = PREVIEW_RESULT.unmatchedCount - FALLBACK_MATCHED_PAIRS * 2;
+  const afterFallback = PREVIEW_RESULT.unmatchedCount - FALLBACK_MATCHED_PAIRS * 2;
+  const stillUnmatched = afterFallback - RESCUE_MATCHED_COUNT;
+  const remainingForManualMatch = MOCK_STILL_UNMATCHED.filter((p) => !manuallyMatched.includes(p.id));
+
+  const pickForManualMatch = (id: string) => {
+    if (pendingPick === null) {
+      setPendingPick(id);
+      return;
+    }
+    if (pendingPick === id) {
+      setPendingPick(null);
+      return;
+    }
+    setManuallyMatched((prev) => [...prev, pendingPick, id]);
+    setPendingPick(null);
+  };
 
   return (
     <section className="matching-run">
       <div className="admin__section-head">
         <h2>매칭 실행</h2>
-        <span className="admin__section-hint">1일 1회 16:00 일괄 실행 · algorithm mutual-v1.0.0</span>
+        <span className="admin__section-hint">3일간 접수 · 3일차 16:00 일괄 실행 · algorithm mutual-v1.0.0</span>
       </div>
 
       <div className="matching-run__gender">
@@ -153,21 +194,78 @@ export function MatchingRunPanel() {
 
           {status === "running_fallback" ? (
             <div className="matching-run__committed matching-run__fallback">
-              <p>2차(구제) 매칭 계산 중…</p>
+              <p>2차(임계값 완화) 매칭 계산 중…</p>
             </div>
           ) : null}
 
-          {status === "done" && PREVIEW_RESULT.unmatchedCount > 0 ? (
+          {status === "running_rescue" || status === "done" ? (
             <div className="matching-run__committed matching-run__fallback">
               <span className="matching-run__committed-badge">2차 확정 완료 · {FALLBACK_MATCHED_PAIRS}쌍 추가</span>
+              <p>
+                그래도 {afterFallback}명이 남으면, 성비 불균형으로 못 맞은 인원만 대상으로 이미 매칭된 사람과
+                최대 2인까지 매칭하는 복수매칭 구제를 한 번 더 시도해요.
+              </p>
+            </div>
+          ) : null}
+
+          {status === "running_rescue" ? (
+            <div className="matching-run__committed matching-run__fallback">
+              <p>3차(복수매칭 구제) 매칭 계산 중…</p>
+            </div>
+          ) : null}
+
+          {status === "done" ? (
+            <div className="matching-run__committed matching-run__fallback">
+              <span className="matching-run__committed-badge">3차(복수매칭 구제) 확정 완료 · {RESCUE_MATCHED_COUNT}명 구제</span>
               {stillUnmatched > 0 ? (
-                <p>그래도 {stillUnmatched}명은 끝내 조건이 맞는 상대가 없었어요. 운영자 화면에서 개별 안내가 필요해요.</p>
+                <p>그래도 {stillUnmatched}명은 끝내 조건이 맞는 상대가 없었어요. 아래에서 직접 짝을 지어주세요.</p>
               ) : (
                 <p>대기 중이던 전원이 매칭됐어요.</p>
               )}
               <Button variant="ghost" onClick={() => setStatus("idle")}>
                 되돌리기
               </Button>
+            </div>
+          ) : null}
+
+          {status === "done" && remainingForManualMatch.length > 0 ? (
+            <div className="matching-run__manual">
+              <h3 className="matching-run__subtitle">수동 매칭</h3>
+              <p className="matching-run__manual-hint">
+                두 명을 골라 직접 짝을 지어주세요. {pendingPick ? "상대를 한 명 더 선택하세요." : "먼저 한 명을 선택하세요."}
+              </p>
+              <ul className="matching-run__manual-list">
+                {remainingForManualMatch.map((p) => (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      className={`matching-run__manual-row${pendingPick === p.id ? " is-picked" : ""}`}
+                      onClick={() => pickForManualMatch(p.id)}
+                    >
+                      <span className="matching-run__manual-name">{p.nickname}</span>
+                      <span className="matching-run__manual-meta">
+                        {p.department} · {p.grade}학년 · {p.seekingGender} 희망
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {status === "done" ? (
+            <div className="matching-run__notify">
+              <h3 className="matching-run__subtitle">일괄 알림</h3>
+              {notificationSent ? (
+                <p>17:00 일괄 알림을 보냈어요.</p>
+              ) : (
+                <>
+                  <p>매칭 결과를 확인한 참가자에게 17:00에 일괄로 알려요.</p>
+                  <Button variant="primary" onClick={() => setNotificationSent(true)}>
+                    지금 일괄 알림 보내기
+                  </Button>
+                </>
+              )}
             </div>
           ) : null}
         </div>

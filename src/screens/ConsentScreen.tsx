@@ -49,9 +49,14 @@ export function ConsentScreen({ onSubmit }: Props) {
         <input type="checkbox" checked={consents.instagramShare} onChange={() => toggle("instagramShare")} />
         <span>
           <strong>[필수]</strong> 매칭이 성사되고 상대방이 공식 계정 팔로우 인증을 완료하면, 내가 입력한 Instagram ID와
-          연락 선호 정보가 매칭 상대 1명에게 공개돼요. 공개 정보는 행사 종료 후 7일 이내 삭제해요.
+          연락 선호 정보가 매칭 상대에게 공개돼요. 공개 정보는 행사 종료 후 7일 이내 삭제해요.
         </span>
       </label>
+
+      <p className="consent__multi-match-note">
+        성비가 맞지 않아 혼자 남는 분이 생기면, 한 분이 최대 2명과 매칭될 수 있어요. 특정 한 명이 과도하게
+        많은 인원과 매칭되지 않도록 상한을 2명으로 제한해요.
+      </p>
 
       <label className="consent__row consent__row--optional">
         <input type="checkbox" checked={consents.analytics} onChange={() => toggle("analytics")} />
@@ -66,7 +71,7 @@ export function ConsentScreen({ onSubmit }: Props) {
         {accordionOpen ? (
           <div className="consent__accordion-body">
             <p>수집 항목: 닉네임, 학과, 학년, 성별, MBTI(선택), 취향·성격 태그, 한마디, Instagram ID, 연락 선호</p>
-            <p>이용 목적: 상호 취향 기반 1:1 매칭 계산과 매칭 상대 공개</p>
+            <p>이용 목적: 상호 취향 기반 매칭 계산과 매칭 상대 공개. 원칙은 1:1이며, 성비 불균형 시에만 최대 2명까지 매칭돼요.</p>
             <p>보관 기간: 행사 종료 후 7일 이내 식별정보 삭제, 이후 비식별 집계만 보존</p>
             <p>상대 공개 항목: 닉네임, 학과, 학년, MBTI, 성격 태그, 공통 관심사, 한마디. Instagram ID는 팔로우 인증 후에만.</p>
           </div>

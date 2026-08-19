@@ -7,10 +7,17 @@ import { RadioGroup } from "../components/RadioGroup";
 import { useDraft } from "../context/DraftContext";
 import "./SurveyScreen.css";
 
-const GRADE_OPTIONS = ["1학년", "2학년", "3학년", "4학년"];
+const GRADE_OPTIONS = ["1학년", "2학년", "3학년", "4학년", "5학년", "6학년"];
+const DEPARTMENT_OPTIONS = ["간호학과", "방사선학과", "물리치료학과", "약학과", "바이오로직스학과", "응급구조학과", "치위생학과"];
 const GENDER_OPTIONS = ["남성", "여성", "기타·응답하지 않음"];
 const TRAIT_TAGS = ["차분함", "다정함", "활발함", "유쾌함", "섬세함", "리더십 있음", "장난기 많음", "조용함"];
 const MAX_TRAITS = 3;
+const MBTI_OPTIONS = [
+  "ISTJ", "ISFJ", "INFJ", "INTJ",
+  "ISTP", "ISFP", "INFP", "INTP",
+  "ESTP", "ESFP", "ENFP", "ENTP",
+  "ESTJ", "ESFJ", "ENFJ", "ENTJ",
+];
 
 /** 문서01 §3 화면별 흐름 3번 "나를 소개": 닉네임·학과·학년·성별·성격 태그. 문서02 §4.3 1/4 단계. */
 export function SurveyBasicInfoScreen({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
@@ -55,12 +62,12 @@ export function SurveyBasicInfoScreen({ onNext, onBack }: { onNext: () => void; 
       </div>
 
       <div className="survey__field-group">
-        <Field
+        <RadioGroup
           label="학과"
-          placeholder="예: 간호학과"
-          maxLength={30}
+          name="department"
+          options={DEPARTMENT_OPTIONS}
           value={draft.department}
-          onChange={(e) => patch({ department: e.target.value })}
+          onChange={(value) => patch({ department: value })}
         />
       </div>
 
@@ -94,6 +101,27 @@ export function SurveyBasicInfoScreen({ onNext, onBack }: { onNext: () => void; 
             />
           ))}
         </div>
+      </div>
+
+      <div className="survey__field-group">
+        <RadioGroup
+          label="MBTI (선택)"
+          name="mbti"
+          options={MBTI_OPTIONS}
+          value={draft.mbti}
+          onChange={(value) => patch({ mbti: value })}
+        />
+      </div>
+
+      <div className="survey__field-group">
+        <Field
+          label="한마디"
+          placeholder="상대에게 남기고 싶은 한마디 (선택)"
+          maxLength={40}
+          value={draft.oneLiner}
+          onChange={(e) => patch({ oneLiner: e.target.value })}
+          helper="최대 40자"
+        />
       </div>
 
       <div className="survey__footer">

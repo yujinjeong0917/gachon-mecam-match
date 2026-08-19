@@ -56,8 +56,20 @@ export function ReviewScreen({ onSubmitted }: Props) {
             <dd>{draft.traits.length ? draft.traits.join(", ") : "-"}</dd>
           </div>
           <div>
+            <dt>MBTI</dt>
+            <dd>{draft.mbti || "-"}</dd>
+          </div>
+          <div>
             <dt>관심사</dt>
             <dd>{draft.interests.length ? draft.interests.join(", ") : "-"}</dd>
+          </div>
+          <div>
+            <dt>좋아하는 음식·음악</dt>
+            <dd>{[...draft.food, ...draft.music].length ? [...draft.food, ...draft.music].join(", ") : "-"}</dd>
+          </div>
+          <div>
+            <dt>한마디</dt>
+            <dd>{draft.oneLiner || "-"}</dd>
           </div>
         </dl>
       </div>

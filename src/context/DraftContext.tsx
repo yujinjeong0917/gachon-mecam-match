@@ -6,8 +6,11 @@ export interface DraftState {
   grade: number | null;
   gender: string;
   traits: string[];
+  mbti: string;
+  oneLiner: string;
   interests: string[];
   food: string[];
+  music: string[];
   seekingGender: string;
   desiredTraits: string[];
   activities: string[];
@@ -22,8 +25,11 @@ export const INITIAL_DRAFT: DraftState = {
   grade: null,
   gender: "",
   traits: [],
+  mbti: "",
+  oneLiner: "",
   interests: [],
   food: [],
+  music: [],
   seekingGender: "",
   desiredTraits: [],
   activities: [],

@@ -22,12 +22,24 @@ const STEPS = [
   { key: "reveal", label: "연락 정보 공개" },
 ] as const;
 
+const MISSIONS = [
+  { key: "intro", label: "서로의 첫인상을 말해주세요" },
+  { key: "common_ground", label: "상대방과 공통점 3가지를 찾아주세요" },
+  { key: "photo", label: "축제에서 함께 사진을 찍어주세요" },
+] as const;
+
 /** 문서01 §5, 문서02 §4.7: 운영자 확인 전에는 상대 Instagram·전화번호를 응답에 포함하지 않는다는 원칙을 status로 표현. */
 export function CheatkeySheet({ open, onClose, officialInstagramUrl, unlockedHandle, unlockedPhone, contactPreference }: Props) {
   const [status, setStatus] = useState<Status>("locked");
   const [copiedField, setCopiedField] = useState<"handle" | "phone" | null>(null);
+  const [completedMissions, setCompletedMissions] = useState<string[]>([]);
 
   const activeIndex = status === "locked" ? 0 : status === "waiting_for_operator" ? 1 : 2;
+
+  // 실제로는 완료 시점마다 public.mark_my_match_mission() RPC로 기록한다.
+  const toggleMission = (key: string) => {
+    setCompletedMissions((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
+  };
 
   useEffect(() => {
     if (!open) {
@@ -118,6 +130,33 @@ export function CheatkeySheet({ open, onClose, officialInstagramUrl, unlockedHan
               </button>
             </div>
             <p className="cheatkey__preference">상대는 “{contactPreference}”를 선호해요</p>
+
+            <div className="cheatkey__missions">
+              <div className="cheatkey__missions-head">
+                <h3>마지막 미션</h3>
+                <span className="cheatkey__missions-count">
+                  {completedMissions.length}/{MISSIONS.length}
+                </span>
+              </div>
+              <p className="cheatkey__hint">직접 만나서 아래 미션을 함께 완료해 보세요</p>
+              <ul className="cheatkey__mission-list">
+                {MISSIONS.map((mission, i) => {
+                  const done = completedMissions.includes(mission.key);
+                  return (
+                    <li key={mission.key}>
+                      <label className={`cheatkey__mission-row${done ? " is-done" : ""}`}>
+                        <input type="checkbox" checked={done} onChange={() => toggleMission(mission.key)} />
+                        <span className="cheatkey__mission-index">{i + 1}</span>
+                        <span className="cheatkey__mission-label">{mission.label}</span>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+              {completedMissions.length === MISSIONS.length ? (
+                <p className="cheatkey__missions-done">미션 완료! 즐거운 시간 보내세요</p>
+              ) : null}
+            </div>
           </motion.div>
         ) : null}
       </AnimatePresence>

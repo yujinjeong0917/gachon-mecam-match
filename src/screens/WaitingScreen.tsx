@@ -43,6 +43,7 @@ export function WaitingScreen({ matchingNumber, recoveryCode, nextMatchingAt, on
       </div>
 
       <p className="waiting__empty-note">매칭 시각이 되면 이 화면에서 바로 결과를 알려드릴게요.</p>
+      <p className="waiting__empty-note">성비가 맞지 않는 경우, 한 분이 최대 2명과 매칭될 수 있어요.</p>
 
       <AnimatePresence>
         {matchFound ? (

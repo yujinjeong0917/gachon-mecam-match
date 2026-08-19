@@ -54,7 +54,7 @@ create table private.profiles (
   participant_id uuid primary key references private.participants(id) on delete cascade,
   nickname text not null,
   department text not null,
-  grade int not null check (grade between 1 and 4),
+  grade int not null check (grade between 1 and 6),
   gender_code text not null check (gender_code in ('male','female','other')),
   mbti text,
   one_liner text
@@ -63,7 +63,7 @@ create table private.profiles (
 create table private.preferences (
   participant_id uuid primary key references private.participants(id) on delete cascade,
   seeking_gender_codes text[] not null default '{}', -- 'male'|'female'|'any'
-  preferred_grades int[] not null default '{1,2,3,4}',
+  preferred_grades int[] not null default '{1,2,3,4,5,6}',
   self_traits text[] not null default '{}',
   desired_traits text[] not null default '{}',
   interests text[] not null default '{}',
@@ -154,10 +154,33 @@ create table private.match_members (
   ended_at timestamptz
 );
 
--- 문서04 §5: 참가자 한 명은 활성 매치 1개까지만.
-create unique index match_members_one_active_match_uq
-  on private.match_members (event_id, participant_id)
-  where ended_at is null;
+-- 문서04 §5 개정: 원칙은 참가자 한 명당 활성 매치 1개. 단 성비 불균형으로 미매칭이 남을 때
+-- 구제(capacity rescue) 패스에서만 최대 2개까지 허용한다(참가자에게 사전 공지, 최대 2인 상한).
+-- 정확히 N개까지만 허용해야 하므로 unique index가 아니라 트리거로 카운트를 검사한다.
+create or replace function private.check_active_match_capacity()
+returns trigger
+language plpgsql
+as $$
+declare
+  v_active_count int;
+  v_max_matches constant int := 2;
+begin
+  if new.ended_at is not null then
+    return new;
+  end if;
+  select count(*) into v_active_count
+  from private.match_members
+  where participant_id = new.participant_id and ended_at is null;
+  if v_active_count >= v_max_matches then
+    raise exception 'ACTIVE_MATCH_CAPACITY_EXCEEDED';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger match_members_capacity_trg
+  before insert on private.match_members
+  for each row execute function private.check_active_match_capacity();
 
 create table private.match_access (
   match_id uuid not null references private.matches(id) on delete cascade,
