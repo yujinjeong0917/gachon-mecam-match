@@ -1,0 +1,26 @@
+.add-to-home {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  margin-top: 12px;
+}
+
+.add-to-home__icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.add-to-home p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.add-to-home p strong {
+  color: var(--color-text-strong);
+}

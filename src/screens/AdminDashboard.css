@@ -442,6 +442,11 @@
   color: var(--color-text-muted);
 }
 
+.matching-run__notify p.matching-run__notify-error {
+  color: var(--color-text-strong);
+  font-weight: 700;
+}
+
 .matching-run__notify .app-button {
   width: auto;
   padding: 0 20px;

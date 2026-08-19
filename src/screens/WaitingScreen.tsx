@@ -1,5 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { AddToHomeScreenBanner } from "../components/AddToHomeScreenBanner";
+import { isPushSupported, subscribeToPush } from "../push";
 import "./WaitingScreen.css";
 
 interface Props {
@@ -9,6 +11,8 @@ interface Props {
   onViewResult?: () => void;
 }
 
+type PushState = "idle" | "subscribing" | "subscribed" | "denied" | "unsupported";
+
 /**
  * 문서02 §4.5. Liquid Glass는 기본 미사용이므로(문서02 §2 "굴절·블러 효과는 Safari 대응 비용이 커서
  * 참가자 핵심 화면에 쓰지 않는다") backdrop-filter 없는 솔리드 surface + shadow-result로 대체하고,
@@ -17,11 +21,25 @@ interface Props {
  */
 export function WaitingScreen({ matchingNumber, recoveryCode, nextMatchingAt, onViewResult }: Props) {
   const [matchFound, setMatchFound] = useState(false);
+  const [pushState, setPushState] = useState<PushState>(isPushSupported() ? "idle" : "unsupported");
 
   useEffect(() => {
     const timer = window.setTimeout(() => setMatchFound(true), 2600);
     return () => window.clearTimeout(timer);
   }, []);
+
+  const requestPush = async () => {
+    setPushState("subscribing");
+    const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
+    const subscription = vapidPublicKey ? await subscribeToPush(vapidPublicKey) : null;
+    if (!subscription) {
+      setPushState("denied");
+      return;
+    }
+    // TODO: public.save_my_push_subscription(event_id, endpoint, p256dh, auth) RPC로 저장.
+    // 호스팅된 Supabase가 아직 없어 여기서는 구독 자체(권한 허용 + 서비스워커 등록)까지만 확인한다.
+    setPushState("subscribed");
+  };
 
   return (
     <section className="waiting">
@@ -44,6 +62,19 @@ export function WaitingScreen({ matchingNumber, recoveryCode, nextMatchingAt, on
 
       <p className="waiting__empty-note">매칭 시각이 되면 이 화면에서 바로 결과를 알려드릴게요.</p>
       <p className="waiting__empty-note">성비가 맞지 않는 경우, 한 분이 최대 2명과 매칭될 수 있어요.</p>
+
+      {pushState !== "unsupported" ? (
+        <div className="waiting__push">
+          {pushState === "subscribed" ? (
+            <p className="waiting__empty-note">매칭되면 알림으로 알려드릴게요.</p>
+          ) : (
+            <button type="button" className="waiting__push-button" onClick={requestPush} disabled={pushState === "subscribing"}>
+              {pushState === "subscribing" ? "알림 설정 중…" : pushState === "denied" ? "알림을 받지 못했어요, 다시 시도" : "매칭 알림 받기"}
+            </button>
+          )}
+          <AddToHomeScreenBanner />
+        </div>
+      ) : null}
 
       <AnimatePresence>
         {matchFound ? (

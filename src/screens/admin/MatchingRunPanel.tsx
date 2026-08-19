@@ -11,6 +11,9 @@ type RunStatus =
   | "running_rescue"
   | "done";
 
+// TODO: 실제 이벤트 컨텍스트가 어드민에 붙으면 여기서 가져올 것. 지금은 supabase/seed.sql의 이벤트 id.
+const MOCK_EVENT_ID = "11111111-1111-1111-1111-111111111111";
+
 const SCORE_DISTRIBUTION: Array<[string, number]> = [
   ["50-59", 8],
   ["60-69", 12],
@@ -50,6 +53,8 @@ export function MatchingRunPanel() {
   const [manuallyMatched, setManuallyMatched] = useState<string[]>([]);
   const [pendingPick, setPendingPick] = useState<string | null>(null);
   const [notificationSent, setNotificationSent] = useState(false);
+  const [notifying, setNotifying] = useState(false);
+  const [notifyError, setNotifyError] = useState<string | null>(null);
   const maxBucket = Math.max(...SCORE_DISTRIBUTION.map(([, count]) => count));
   const genderTotal = GENDER_BREAKDOWN.reduce((sum, g) => sum + g.count, 0);
 
@@ -101,6 +106,35 @@ export function MatchingRunPanel() {
     }
     setManuallyMatched((prev) => [...prev, pendingPick, id]);
     setPendingPick(null);
+  };
+
+  const sendBulkNotification = async () => {
+    setNotifying(true);
+    setNotifyError(null);
+    try {
+      const res = await fetch("/api/send-push", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-token": import.meta.env.VITE_ADMIN_NOTIFY_SECRET as string,
+        },
+        body: JSON.stringify({
+          event_id: MOCK_EVENT_ID,
+          title: "매칭 결과가 도착했어요",
+          body: "지금 앱을 열어 결과를 확인해 보세요",
+          url: "/result",
+        }),
+      });
+      if (!res.ok) {
+        const detail = await res.json().catch(() => null);
+        throw new Error(detail?.error ?? `요청 실패 (${res.status})`);
+      }
+      setNotificationSent(true);
+    } catch (err) {
+      setNotifyError(err instanceof Error ? err.message : "알 수 없는 오류");
+    } finally {
+      setNotifying(false);
+    }
   };
 
   return (
@@ -260,8 +294,9 @@ export function MatchingRunPanel() {
                 <p>17:00 일괄 알림을 보냈어요.</p>
               ) : (
                 <>
-                  <p>매칭 결과를 확인한 참가자에게 17:00에 일괄로 알려요.</p>
-                  <Button variant="primary" onClick={() => setNotificationSent(true)}>
+                  <p>매칭 결과를 확인한 참가자에게 17:00에 일괄로 알려요(Web Push).</p>
+                  {notifyError ? <p className="matching-run__notify-error">발송 실패: {notifyError}</p> : null}
+                  <Button variant="primary" loading={notifying} onClick={sendBulkNotification}>
                     지금 일괄 알림 보내기
                   </Button>
                 </>
