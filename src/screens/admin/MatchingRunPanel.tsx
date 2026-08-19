@@ -202,8 +202,8 @@ export function MatchingRunPanel() {
             <div className="matching-run__committed matching-run__fallback">
               <span className="matching-run__committed-badge">2차 확정 완료 · {FALLBACK_MATCHED_PAIRS}쌍 추가</span>
               <p>
-                그래도 {afterFallback}명이 남으면, 성비 불균형으로 못 맞은 인원만 대상으로 이미 매칭된 사람과
-                최대 2인까지 매칭하는 복수매칭 구제를 한 번 더 시도해요.
+                그래도 {afterFallback}명이 남으면, 성비 불균형으로 못 맞은 인원만 대상으로 임계값을 {RESCUE_MIN_SCORE}점까지
+                낮춰 이미 매칭된 사람과 최대 2인까지 매칭하는 복수매칭 구제를 한 번 더 시도해요.
               </p>
             </div>
           ) : null}
