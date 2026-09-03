@@ -4,7 +4,12 @@
  * 지금은 프런트 목업 단계라 상수로 고정해 둔다.
  */
 export const EVENT_CONFIG = {
-  programName: "72시간 소개팅",
+  programName: "72시간 메캠팅",
+  tagline: "가천대학교 메디컬캠퍼스에서의 72시간, 당신은 72시간 안에 사랑에 빠질 수 있나요?",
+  eventPeriod: "2026.09.21(월) - 09.22(화)",
+  eventHours: "12:00 ~ 17:00",
+  venue: "메디컬캠퍼스 운동장 바람개비 부스",
+  matchReleaseTime: "오후 4시",
   officialInstagram: {
     handle: "gachon__medical",
     url: "https://www.instagram.com/gachon__medical/",

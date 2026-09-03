@@ -174,3 +174,15 @@
   text-align: center;
   color: var(--color-text-strong);
 }
+
+.cheatkey__mission-verify {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-field);
+  background: var(--color-photo-paper);
+  border: 1px dashed var(--color-brass);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-walnut);
+  font-weight: 700;
+}

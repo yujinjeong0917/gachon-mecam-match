@@ -1,14 +1,19 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { AddToHomeScreenBanner } from "../components/AddToHomeScreenBanner";
-import { isPushSupported, subscribeToPush } from "../push";
+import { isPushSupported, subscribeToPush, type PushSubscriptionPayload } from "../push";
 import "./WaitingScreen.css";
 
 interface Props {
   matchingNumber: string;
-  recoveryCode: string;
+  /** 제출 직후 한 번만 서버가 내려준다. 재방문 시에는 다시 못 받으므로 undefined일 수 있다. */
+  recoveryCode?: string;
   nextMatchingAt: string;
   onViewResult?: () => void;
+  /** 실제 앱에서는 GET /me/status 폴링 결과를 그대로 넘긴다. 생략하면(GuidePage 데모용) 내부 데모 타이머로 대체한다. */
+  matchFound?: boolean;
+  /** 구독 정보를 서버에 저장하고 성공 여부를 반환한다. 생략하면(GuidePage 데모용) 브라우저 구독까지만 확인한다. */
+  onSubscribed?: (payload: PushSubscriptionPayload) => Promise<boolean>;
 }
 
 type PushState = "idle" | "subscribing" | "subscribed" | "denied" | "unsupported";
@@ -17,28 +22,28 @@ type PushState = "idle" | "subscribing" | "subscribed" | "denied" | "unsupported
  * 문서02 §4.5. Liquid Glass는 기본 미사용이므로(문서02 §2 "굴절·블러 효과는 Safari 대응 비용이 커서
  * 참가자 핵심 화면에 쓰지 않는다") backdrop-filter 없는 솔리드 surface + shadow-result로 대체하고,
  * 대신 스프링 이징으로 "튀어오르는" 진입감을 낸다.
- * 실제 구현에서는 GET /me/status 폴링이 matched를 반환하는 시점에 이 배너가 뜬다(문서03 §4).
  */
-export function WaitingScreen({ matchingNumber, recoveryCode, nextMatchingAt, onViewResult }: Props) {
-  const [matchFound, setMatchFound] = useState(false);
+export function WaitingScreen({ matchingNumber, recoveryCode, nextMatchingAt, onViewResult, matchFound: matchFoundProp, onSubscribed }: Props) {
+  const [demoMatchFound, setDemoMatchFound] = useState(false);
+  const matchFound = matchFoundProp ?? demoMatchFound;
   const [pushState, setPushState] = useState<PushState>(isPushSupported() ? "idle" : "unsupported");
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setMatchFound(true), 2600);
+    if (matchFoundProp !== undefined) return; // 실사용: 폴링 결과를 그대로 쓰므로 데모 타이머 불필요
+    const timer = window.setTimeout(() => setDemoMatchFound(true), 2600);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [matchFoundProp]);
 
   const requestPush = async () => {
     setPushState("subscribing");
-    const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
+    const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
     const subscription = vapidPublicKey ? await subscribeToPush(vapidPublicKey) : null;
     if (!subscription) {
       setPushState("denied");
       return;
     }
-    // TODO: public.save_my_push_subscription(event_id, endpoint, p256dh, auth) RPC로 저장.
-    // 호스팅된 Supabase가 아직 없어 여기서는 구독 자체(권한 허용 + 서비스워커 등록)까지만 확인한다.
-    setPushState("subscribed");
+    const saved = onSubscribed ? await onSubscribed(subscription) : true;
+    setPushState(saved ? "subscribed" : "denied");
   };
 
   return (
@@ -48,12 +53,20 @@ export function WaitingScreen({ matchingNumber, recoveryCode, nextMatchingAt, on
       <div className="waiting__ticket">
         <span className="waiting__ticket-label">MATCHING NUMBER</span>
         <span className="waiting__ticket-number tabular-nums">{matchingNumber}</span>
-        <div className="waiting__ticket-divider" aria-hidden="true" />
-        <span className="waiting__ticket-label">복구 코드</span>
-        <span className="waiting__ticket-code tabular-nums">{recoveryCode}</span>
+        {recoveryCode ? (
+          <>
+            <div className="waiting__ticket-divider" aria-hidden="true" />
+            <span className="waiting__ticket-label">복구 코드</span>
+            <span className="waiting__ticket-code tabular-nums">{recoveryCode}</span>
+          </>
+        ) : null}
       </div>
 
-      <p className="waiting__capture-hint">이 화면을 캡처해 주세요</p>
+      {recoveryCode ? (
+        <p className="waiting__capture-hint">이 화면을 캡처해 주세요</p>
+      ) : (
+        <p className="waiting__capture-hint">복구 코드는 신청 직후 한 번만 보여드려요</p>
+      )}
 
       <div className="waiting__status">
         <span className="waiting__pulse" aria-hidden="true" />

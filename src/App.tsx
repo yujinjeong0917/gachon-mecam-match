@@ -2,6 +2,7 @@ import { MotionConfig } from "framer-motion";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { DraftProvider } from "./context/DraftContext";
 import { ParticipantLayout } from "./layouts/ParticipantLayout";
+import { AdminLoginPage } from "./pages/AdminLoginPage";
 import { AdminPage } from "./pages/AdminPage";
 import { ConsentPage } from "./pages/ConsentPage";
 import { GuidePage } from "./pages/GuidePage";
@@ -33,6 +34,7 @@ export default function App() {
               <Route path="/result" element={<ResultPage />} />
             </Route>
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/admin/login" element={<AdminLoginPage />} />
             <Route path="/guide" element={<GuidePage />} />
           </Routes>
         </DraftProvider>

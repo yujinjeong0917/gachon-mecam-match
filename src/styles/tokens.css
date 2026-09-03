@@ -1,15 +1,22 @@
-/* 문서 02 "02. UI·UX 설계 | SEED + Minimal Gradient" §1 시각 토큰 그대로 옮김 */
+/* 72시간 메캠팅 공식 포스터/미션카드 브랜드 색상에서 추출한 토큰 세트 (2026-09-04 리브랜딩) */
 :root {
-  --color-photo-paper: #ffffff; /* 전체 배경 */
+  --color-photo-paper: #fdf2f5; /* 전체 배경 — 포스터 배경의 옅은 핑크 */
   --color-surface: #ffffff; /* 폼·일반 카드 */
-  --color-walnut: #5b4032; /* 부스 외장, 티켓·결과 프레임만 */
-  --gradient-film-start: #6076a3;
-  --gradient-film-end: #c77e70;
-  --color-brass: #b69a66; /* 작은 명판·구분점 */
-  --color-border: #dcdcdc;
-  --color-text-strong: #27231f;
-  --color-text-muted: #756b61;
-  --shadow-result: 0 8px 28px rgba(58, 42, 31, 0.12);
+  --color-walnut: #b23a5c; /* 로고·강조 텍스트, 티켓·결과 프레임 */
+  --gradient-film-start: #ec5a80;
+  --gradient-film-end: #d6336c;
+  --color-brass: #d98fa3; /* 작은 명판·구분점 */
+  --color-border: #f0d9de;
+  --color-text-strong: #2b2430;
+  --color-text-muted: #8a7680;
+  --shadow-result: 0 8px 28px rgba(214, 51, 108, 0.16);
+
+  --color-danger: #d64550;
+  --color-danger-bg: #fbe4e6;
+  --color-danger-border: #f0b8be;
+  --color-warning-text: #9a5b2e;
+  --color-warning-bg: #fbeedd;
+  --color-warning-border: #e9c79a;
 
   --radius-field: 8px;
   --radius-card: 12px;

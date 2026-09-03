@@ -55,7 +55,7 @@
 }
 
 .app-button--danger-ghost {
-  color: #a24a3c;
+  color: var(--color-danger);
   background: transparent;
   border-color: var(--color-border);
 }

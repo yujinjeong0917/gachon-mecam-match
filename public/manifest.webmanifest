@@ -1,12 +1,12 @@
 {
-  "name": "72시간 소개팅",
-  "short_name": "72시간 소개팅",
-  "description": "가천대 메디컬 가을축제 취향 기반 블라인드 매칭",
+  "name": "72시간 메캠팅",
+  "short_name": "72시간 메캠팅",
+  "description": "가천대학교 메디컬캠퍼스 축제 72시간 블라인드 매칭",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#863bff",
+  "background_color": "#fdf2f5",
+  "theme_color": "#d6336c",
   "lang": "ko",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

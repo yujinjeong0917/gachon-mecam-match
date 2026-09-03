@@ -17,6 +17,7 @@ export interface DraftState {
   contactStyle: string;
   instagramHandle: string;
   phoneNumber: string;
+  analyticsConsent: boolean;
 }
 
 export const INITIAL_DRAFT: DraftState = {
@@ -36,6 +37,7 @@ export const INITIAL_DRAFT: DraftState = {
   contactStyle: "",
   instagramHandle: "",
   phoneNumber: "",
+  analyticsConsent: false,
 };
 
 interface DraftContextValue {

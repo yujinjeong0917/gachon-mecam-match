@@ -27,15 +27,15 @@
   padding: 28px 20px 24px;
 }
 
-/* 무한이 공식 도안을 나중에 합성할 자리. AI로 캐릭터를 생성하지 않는다. */
+/* 공식 마스코트 배지(72시간 메캠팅). */
 .result__stamp-slot {
   position: absolute;
-  bottom: 12px;
-  right: 12px;
-  width: 28px;
-  height: 28px;
+  top: 14px;
+  right: 14px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  border: 1px dashed var(--color-border);
+  transform: rotate(8deg);
 }
 
 .result__score-label {

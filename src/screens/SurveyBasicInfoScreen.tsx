@@ -8,7 +8,9 @@ import { useDraft } from "../context/DraftContext";
 import "./SurveyScreen.css";
 
 const GRADE_OPTIONS = ["1학년", "2학년", "3학년", "4학년", "5학년", "6학년"];
-const DEPARTMENT_OPTIONS = ["간호학과", "방사선학과", "물리치료학과", "약학과", "바이오로직스학과", "응급구조학과", "치위생학과"];
+const PRESET_DEPARTMENTS = ["의예과", "간호학과", "방사선학과", "물리치료학과", "약학과", "바이오로직스학과", "응급구조학과", "치위생학과"];
+const CUSTOM_DEPARTMENT_OPTION = "기타(직접입력)";
+const DEPARTMENT_OPTIONS = [...PRESET_DEPARTMENTS, CUSTOM_DEPARTMENT_OPTION];
 const GENDER_OPTIONS = ["남성", "여성", "기타·응답하지 않음"];
 const TRAIT_TAGS = ["차분함", "다정함", "활발함", "유쾌함", "섬세함", "리더십 있음", "장난기 많음", "조용함"];
 const MAX_TRAITS = 3;
@@ -23,6 +25,9 @@ const MBTI_OPTIONS = [
 export function SurveyBasicInfoScreen({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { draft, updateDraft } = useDraft();
   const [saved, setSaved] = useState(true);
+  const initialCustomDept = draft.department !== "" && !PRESET_DEPARTMENTS.includes(draft.department);
+  const [customDeptMode, setCustomDeptMode] = useState(initialCustomDept);
+  const [customDeptText, setCustomDeptText] = useState(initialCustomDept ? draft.department : "");
 
   const patch = (fields: Partial<typeof draft>) => {
     updateDraft(fields);
@@ -66,9 +71,30 @@ export function SurveyBasicInfoScreen({ onNext, onBack }: { onNext: () => void; 
           label="학과"
           name="department"
           options={DEPARTMENT_OPTIONS}
-          value={draft.department}
-          onChange={(value) => patch({ department: value })}
+          value={customDeptMode ? CUSTOM_DEPARTMENT_OPTION : draft.department}
+          onChange={(value) => {
+            if (value === CUSTOM_DEPARTMENT_OPTION) {
+              setCustomDeptMode(true);
+              patch({ department: customDeptText });
+            } else {
+              setCustomDeptMode(false);
+              setCustomDeptText("");
+              patch({ department: value });
+            }
+          }}
         />
+        {customDeptMode ? (
+          <Field
+            label="학과명 입력"
+            placeholder="학과를 입력해주세요"
+            maxLength={20}
+            value={customDeptText}
+            onChange={(e) => {
+              setCustomDeptText(e.target.value);
+              patch({ department: e.target.value });
+            }}
+          />
+        ) : null}
       </div>
 
       <div className="survey__field-group">

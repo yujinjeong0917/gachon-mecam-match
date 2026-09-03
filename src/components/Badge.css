@@ -20,7 +20,7 @@
 }
 
 .app-badge--warning {
-  color: #8a4a3c;
-  background: #f7e6e0;
-  border-color: #e0b3a4;
+  color: var(--color-warning-text);
+  background: var(--color-warning-bg);
+  border-color: var(--color-warning-border);
 }

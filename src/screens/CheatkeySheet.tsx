@@ -14,6 +14,12 @@ interface Props {
   unlockedHandle: string;
   unlockedPhone: string;
   contactPreference: string;
+  /** 실제 앱에서는 get_my_result().cheatkey.status를 그대로 넘긴다. 생략하면(GuidePage 데모용) 내부 데모 타이머로 대체한다. */
+  status?: Status;
+  /** 실제 앱: 팔로우 버튼 클릭 시 request_my_cheatkey_unlock RPC를 호출한다. 생략하면 데모 타이머로 대체한다. */
+  onRequestFollow?: () => void;
+  /** status가 'unlocked'일 때 실제 값. 제공되면 unlockedHandle/unlockedPhone/contactPreference 대신 이 값을 보여준다. */
+  contact?: { handle: string; phone: string; preference: string } | null;
 }
 
 const STEPS = [
@@ -24,38 +30,56 @@ const STEPS = [
 
 const MISSIONS = [
   { key: "intro", label: "서로의 첫인상을 말해주세요" },
-  { key: "common_ground", label: "상대방과 공통점 3가지를 찾아주세요" },
-  { key: "photo", label: "축제에서 함께 사진을 찍어주세요" },
+  { key: "common_ground", label: "상대방과의 공통점 3가지를 찾아주세요" },
+  { key: "photo", label: "학과교류주점에 방문해 함께 사진을 찍고, 상품을 받으세요!" },
 ] as const;
 
 /** 문서01 §5, 문서02 §4.7: 운영자 확인 전에는 상대 Instagram·전화번호를 응답에 포함하지 않는다는 원칙을 status로 표현. */
-export function CheatkeySheet({ open, onClose, officialInstagramUrl, unlockedHandle, unlockedPhone, contactPreference }: Props) {
-  const [status, setStatus] = useState<Status>("locked");
+export function CheatkeySheet({
+  open,
+  onClose,
+  officialInstagramUrl,
+  unlockedHandle,
+  unlockedPhone,
+  contactPreference,
+  status: statusProp,
+  onRequestFollow,
+  contact,
+}: Props) {
+  const [demoStatus, setDemoStatus] = useState<Status>("locked");
+  const status = statusProp ?? demoStatus;
   const [copiedField, setCopiedField] = useState<"handle" | "phone" | null>(null);
   const [completedMissions, setCompletedMissions] = useState<string[]>([]);
 
   const activeIndex = status === "locked" ? 0 : status === "waiting_for_operator" ? 1 : 2;
 
-  // 실제로는 완료 시점마다 public.mark_my_match_mission() RPC로 기록한다.
   const toggleMission = (key: string) => {
     setCompletedMissions((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
   };
 
   useEffect(() => {
+    if (statusProp !== undefined) return; // 실사용: 서버 폴링 결과를 그대로 쓰므로 데모 타이머 불필요
     if (!open) {
-      setStatus("locked");
+      setDemoStatus("locked");
       return;
     }
-    if (status !== "waiting_for_operator") return;
-    // 실제로는 GET /me/cheatkey 폴링으로 운영자의 POST /admin/cheat-unlocks 확정을 기다린다(문서03 §4·§5).
-    const timer = window.setTimeout(() => setStatus("unlocked"), 1800);
+    if (demoStatus !== "waiting_for_operator") return;
+    const timer = window.setTimeout(() => setDemoStatus("unlocked"), 1800);
     return () => window.clearTimeout(timer);
-  }, [open, status]);
+  }, [open, demoStatus, statusProp]);
 
   const handleRequestFollow = () => {
     window.open(officialInstagramUrl, "_blank", "noopener,noreferrer");
-    setStatus("waiting_for_operator");
+    if (onRequestFollow) {
+      onRequestFollow();
+    } else {
+      setDemoStatus("waiting_for_operator");
+    }
   };
+
+  const handle = contact?.handle ?? unlockedHandle;
+  const phone = contact?.phone ?? unlockedPhone;
+  const preference = contact?.preference ?? contactPreference;
 
   const handleCopy = async (field: "handle" | "phone", value: string) => {
     try {
@@ -118,18 +142,18 @@ export function CheatkeySheet({ open, onClose, officialInstagramUrl, unlockedHan
             transition={{ duration: DURATION.fast, ease: EASE_OUT }}
           >
             <div className="cheatkey__handle-row">
-              <span className="cheatkey__handle">{unlockedHandle}</span>
-              <button type="button" className="cheatkey__copy" onClick={() => handleCopy("handle", unlockedHandle)}>
+              <span className="cheatkey__handle">{handle}</span>
+              <button type="button" className="cheatkey__copy" onClick={() => handleCopy("handle", handle)}>
                 {copiedField === "handle" ? "복사됨" : "ID 복사"}
               </button>
             </div>
             <div className="cheatkey__handle-row">
-              <span className="cheatkey__handle">{unlockedPhone}</span>
-              <button type="button" className="cheatkey__copy" onClick={() => handleCopy("phone", unlockedPhone)}>
+              <span className="cheatkey__handle">{phone}</span>
+              <button type="button" className="cheatkey__copy" onClick={() => handleCopy("phone", phone)}>
                 {copiedField === "phone" ? "복사됨" : "번호 복사"}
               </button>
             </div>
-            <p className="cheatkey__preference">상대는 “{contactPreference}”를 선호해요</p>
+            {preference ? <p className="cheatkey__preference">상대는 “{preference}”를 선호해요</p> : null}
 
             <div className="cheatkey__missions">
               <div className="cheatkey__missions-head">
@@ -156,6 +180,12 @@ export function CheatkeySheet({ open, onClose, officialInstagramUrl, unlockedHan
               {completedMissions.length === MISSIONS.length ? (
                 <p className="cheatkey__missions-done">미션 완료! 즐거운 시간 보내세요</p>
               ) : null}
+              <p className="cheatkey__mission-verify">
+                완료한 미션은 가천대 메디컬캠퍼스 인스타그램으로 DM을 보내 인증해주세요! ♥
+              </p>
+              <Button variant="ghost" onClick={() => window.open(officialInstagramUrl, "_blank", "noopener,noreferrer")}>
+                인스타그램 DM으로 인증하기
+              </Button>
             </div>
           </motion.div>
         ) : null}

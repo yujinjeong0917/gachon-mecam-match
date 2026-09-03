@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>72시간 메캠팅 - 유저플로우 다이어그램</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #666;
+    --card-bg: #fafafa;
+    --border: #ddd;
+    --accent: #d6336c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a1a;
+      --fg: #eee;
+      --muted: #aaa;
+      --card-bg: #242424;
+      --border: #3a3a3a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    padding: 32px 16px 80px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+  h2 {
+    font-size: 16px;
+    margin: 40px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent);
+  }
+  .note {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+  .note b { color: var(--fg); }
+  .diagram-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    overflow-x: auto;
+    margin-bottom: 12px;
+  }
+  .legend {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-left: 8px;
+    background: rgba(214,51,108,0.12);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  footer {
+    margin-top: 48px;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>72시간 메캠팅 — 유저플로우 다이어그램</h1>
+  <div class="subtitle">참가자 플로우 / 예외·분기 / 관리자 플로우 — 기존 초안 대비 수정사항 반영본</div>
+
+  <div class="note">
+    <b>이번 수정 요약</b><br>
+    · 페이지1 문구 변경 (72시간 메캠팅 인트로)<br>
+    · 페이지3 학과에 <b>의예과 추가</b> + <b>직접입력란</b> 추가<br>
+    · 페이지2·4·5 및 이후 화면은 기존 유지<br>
+    · <b>미션3 변경</b>: "학과교류주점에 방문해 함께 사진을 찍고, 상품을 받으세요!"<br>
+    · 미션 안내에 "완료한 미션은 가천대 메디컬캠퍼스 인스타로 DM을 보내 인증해주세요!" 문구 추가<br>
+    · 미션 인증/체크는 <b>관리자 페이지에 넣지 않음</b> — 운영진이 인스타 DM으로 직접 확인<br>
+    · 온라인 매칭 오류 시 <b>수기 매칭</b>으로 전환하는 백업 경로 명시
+  </div>
+
+  <h2>① 참가자 플로우</h2>
+  <div class="diagram-card">
+    <pre class="mermaid">
+flowchart TD
+    QR["QR 코드 스캔"] --> P1
+
+    subgraph ENTRY["참여 정보 입력"]
+        P1["페이지1 — 인트로<br/>72시간 메캠팅<br/>'메디컬캠퍼스 축제에서의 72시간,<br/>당신은 72시간 안에 사랑에 빠질 수 있나요?'<br/>(문구 수정)"]
+        P2["페이지2 — 동의 화면<br/>(기존 문구 그대로 유지)"]
+        P3["페이지3 — 기본정보 입력<br/>학과 선택: 의예과 추가<br/>+ '직접입력' 항목 추가<br/>(나머지 항목 유지)"]
+        P4["페이지4<br/>(기존 유지)"]
+        P5["페이지5<br/>(기존 유지)"]
+        P1 --> P2 --> P3 --> P4 --> P5
+    end
+
+    P5 --> SUBMIT["제출 완료"]
+
+    SUBMIT --> WAIT["매칭 대기 화면<br/>제출 완료 안내 + 매칭 날짜/시간 안내<br/>(매칭 전 재접속 시 동일 대기 화면 노출)"]
+
+    WAIT --> BATCH{"4시 일괄 매칭<br/>실행"}
+    BATCH -- "정상 처리" --> ONLINE["온라인 자동 매칭"]
+    BATCH -- "시스템 오류 발생" --> MANUAL["수기 매칭으로 전환<br/>(운영진 백업 처리)"]
+    ONLINE --> PUSH
+    MANUAL --> PUSH
+
+    PUSH["푸시 알림 발송<br/>'매칭 결과가 도착했어요'"] --> RESULT
+
+    RESULT["매칭 결과 화면<br/>상대방 정보 · 궁합 점수 · 공통 관심사 표시"] --> MISSIONS
+
+    subgraph MISSIONS["미션 안내"]
+        M0["미션 3개 안내 화면<br/>+ 안내문구 추가:<br/>'완료한 미션은 가천대 메디컬캠퍼스<br/>인스타로 DM을 보내 인증해주세요!'"]
+        M1["미션1 (기존 유지)"]
+        M2["미션2 (기존 유지)"]
+        M3["미션3 (수정)<br/>학과교류주점에 방문해<br/>함께 사진을 찍고, 상품을 받으세요!"]
+        M0 --> M1
+        M0 --> M2
+        M0 --> M3
+    end
+
+    MISSIONS --> IGDM["개인 인스타그램으로<br/>가천대 메디컬캠퍼스 계정 DM 인증"]
+    IGDM --> CHECK["운영진 확인"]
+    CHECK --> RANK["순위 산정"]
+    RANK --> PRIZE["상품 지급"]
+    </pre>
+  </div>
+
+  <h2>② 예외 · 분기 처리</h2>
+  <div class="diagram-card">
+    <pre class="mermaid">
+flowchart TD
+    ACCESS["참가자 웹 재접속"] --> STATE{"참가자 상태 확인"}
+
+    STATE -- "이미 참여 완료" --> DUP["중복 참여 안내 화면<br/>재입력 불가, 기존 제출 내역 안내"]
+    STATE -- "제출은 했지만 매칭 전" --> WAIT2["매칭 대기 화면 그대로 노출<br/>(매칭 날짜/시간 재안내)"]
+    STATE -- "매칭 결과 공개됨" --> RESULT2["매칭 결과 화면 바로 진입<br/>(대기 화면 건너뜀)"]
+    STATE -- "정보 수정 요청" --> EDIT["운영진 문의 → 관리자 페이지에서<br/>참가자 정보 수정 처리"]
+    STATE -- "웹 오류 발생" --> ERR["오류 안내 화면"]
+
+    ERR --> ERRTYPE{"오류 범위"}
+    ERRTYPE -- "개인 접속 오류" --> RETRY["새로고침 / 재접속 안내"]
+    ERRTYPE -- "온라인 매칭 시스템 오류" --> MANUAL2["수기 매칭 전환<br/>(매칭 실패 없이 운영진이 수동 처리)"]
+    </pre>
+  </div>
+  <div class="legend">※ 온라인 매칭 시스템에 문제가 생겨도 참가자에게 "매칭 실패"가 노출되지 않도록, 항상 수기 매칭 백업 경로로 흡수한다.</div>
+
+  <h2>③ 관리자 플로우 <span class="tag">미션 인증 기능 제외</span></h2>
+  <div class="diagram-card">
+    <pre class="mermaid">
+flowchart TD
+    LOGIN["관리자 로그인"] --> DASH["관리자 대시보드"]
+
+    DASH --> A["참가자 관리"]
+    DASH --> B["매칭 관리"]
+    DASH --> C["매칭 결과 관리"]
+    DASH --> D["긴급 운영 기능"]
+
+    A --> A1["전체 참가자 수 확인"]
+    A --> A2["참가자 목록 확인"]
+    A --> A3["참가자 정보 검색"]
+    A --> A4["중복 참여 여부 확인"]
+
+    B --> B1["전체 매칭 현황 확인"]
+    B --> B2["매칭 완료/미완료 인원 확인"]
+    B --> B3["매칭 결과 확인"]
+    B --> B4["수동 매칭 기능"]
+    B --> B5["매칭 해제 및 재매칭"]
+
+    C --> C1["매칭된 참가자 정보 확인"]
+    C --> C2["매칭 결과 공개/비공개 관리"]
+    C --> C3["특정 참가자 매칭 결과 수정"]
+
+    D --> D1["수동 매칭"]
+    D --> D2["매칭 결과 공개 중지/재개"]
+    D --> D3["참가자 정보 수정"]
+    D --> D4["매칭 해제/재매칭"]
+    D --> D5["실시간 참가자·매칭 현황 확인"]
+
+    DASH -.->|"미션 인증은 관리자 페이지 밖에서 처리"| IG["인스타그램 DM으로<br/>운영진이 직접 확인"]
+    </pre>
+  </div>
+
+  <footer>72시간 메캠팅 · 유저플로우 정리본 (docs/user-flow.html)</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: isDark ? 'dark' : 'default',
+    flowchart: { curve: 'basis', htmlLabels: true }
+  });
+</script>
+</body>
+</html>

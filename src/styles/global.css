@@ -8,7 +8,7 @@
 html,
 body {
   margin: 0;
-  background: #ffffff;
+  background: var(--color-photo-paper);
   font-family: var(--font-body);
   font-weight: 500;
   color: var(--color-text-strong);
