@@ -23,6 +23,12 @@ export function LandingPage() {
       });
   }, [eventId]);
 
+  useEffect(() => {
+    if (!supabase || !eventId) return;
+    // supabase-js의 쿼리 빌더는 lazy thenable이라 .then()을 붙이지 않으면 요청 자체가 안 나간다.
+    supabase.rpc("log_my_funnel_event", { p_event_id: eventId, p_stage: "landing_view" }).then(() => {});
+  }, [eventId]);
+
   if (!ready || loading) {
     return null;
   }

@@ -30,6 +30,12 @@ export function ResultPage() {
   const cheatkeyStatus = result?.status === "matched" ? result.cheatkey.status : "locked";
 
   useEffect(() => {
+    if (!supabase || !eventId || result?.status !== "matched") return;
+    // supabase-js의 쿼리 빌더는 lazy thenable이라 .then()을 붙이지 않으면 요청 자체가 안 나간다.
+    supabase.rpc("log_my_funnel_event", { p_event_id: eventId, p_stage: "result_view" }).then(() => {});
+  }, [eventId, result?.status]);
+
+  useEffect(() => {
     if (!supabase || !eventId || result?.status !== "matched" || cheatkeyStatus !== "unlocked" || contact) return;
     supabase
       .rpc("get_my_unlocked_contact", { p_event_id: eventId, p_match_id: result.match_id })

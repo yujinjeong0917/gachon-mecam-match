@@ -39,6 +39,7 @@
 
 1. **`public.events` / `public.event_features`에 RLS 정책은 있었지만 테이블 단위 SELECT grant가 없었습니다.** RLS는 grant가 있어야 그 위에서 행을 걸러줄 뿐 grant 자체를 대신해주지 않습니다 — 그 결과 참가자 웹이 이벤트 정보를 아예 못 읽는 상태였습니다(로컬에서 `permission denied for table events`로 직접 재현). `supabase/migrations/20260904020000_grant_public_tables.sql`에서 수정.
 2. **`CheatkeySheet`가 상대의 Instagram ID·전화번호를 잠금 여부와 무관하게 항상 props로 통째로 받고 있었습니다.** 화면에는 조건부 렌더링으로 가려져 있었지만, 운영자 확인 전에도 이미 브라우저에 데이터가 와 있는 상태였습니다. 이제 `get_my_unlocked_contact` RPC가 `match_access.status = 'unlocked'`일 때만 값을 내려주도록 바꿔서, 잠긴 상태에서는 서버가 애초에 값을 안 보냅니다.
+3. **`supabase-js`의 쿼리 빌더(`.from()`/`.rpc()`)는 lazy thenable입니다 — `.then()`/`await`을 붙이지 않으면 실제 HTTP 요청 자체가 안 나갑니다.** 접수 퍼널용 `log_my_funnel_event` 호출을 "결과는 필요 없으니" fire-and-forget으로(`.then()` 없이) 작성했더니 브라우저 콘솔에 에러 하나 없이 요청이 그냥 조용히 발생하지 않았습니다. 직접 여러 번 재현해서 원인을 좁혔고, `.then(() => {})`을 붙이는 것으로 고쳤습니다. **코드베이스 전체에서 이 패턴(체이닝 없는 fire-and-forget `supabase.rpc(...)`)을 다시 쓸 때는 항상 `.then()`이나 `await`을 붙여야 합니다** — 결과를 안 쓰더라도.
 
 ---
 
@@ -60,7 +61,11 @@
 - **`QueuePanel`** — 실제 팔로우 확인 대기열 표시 + "승인" 버튼으로 `admin_unlock_cheatkey` 즉시 호출.
 - **`EventControlPanel`** — 5개 스위치(`registration_open`/`matching_enabled`/`result_reveal_enabled`/`cheat_unlock_enabled`/`fallback_mode`) 전부 `admin_get_event_features`/`admin_set_event_feature`(신규 RPC, `20260904030000_admin_feature_flags.sql`)로 실제 DB에 반영. 랜딩 페이지도 `registration_open`을 실제로 읽어서 접수 마감 화면을 보여주도록 연결 — "지금 접수 잠그기"를 누르면 참가자 화면이 실시간으로 바뀌는 것까지 브라우저에서 확인함.
 
-이제 관리자 패널 5개(개요/접수퍼널 제외/매칭실행/운영대기열/행사제어) 중 **접수 퍼널만 mock으로 남아있습니다.** (참가자 유입 단계별 이탈률 같은 분석용 패널이라 우선순위가 낮다고 판단해 이번엔 손대지 않았습니다.)
+### 2026-09-04 추가로 연결 완료 (접수 퍼널)
+- **`FunnelPanel`** — 6단계(시작/제출성공/대기/매칭/결과열람/치트키해제) 전부 연결. 이 중 "제출성공/대기/매칭/치트키해제"는 기존 테이블에서 바로 계산되지만, "시작"(랜딩 조회)·"결과 열람"은 지금까지 아무 데도 기록되지 않던 페이지뷰라 `private.funnel_events` 테이블을 새로 만들었습니다(`20260904040000_funnel_tracking.sql`). 익명 세션(auth.uid())당 1회만 세고, 개인 식별 정보는 저장하지 않습니다.
+- 이제 관리자 패널 5개(개요/접수퍼널/매칭실행/운영대기열/행사제어) **전부 실데이터로 연결됐습니다.**
+
+이 패널을 연결하다가 진짜 버그를 하나 더 찾았습니다 — 위 C 섹션의 3번(lazy thenable로 인해 fire-and-forget RPC가 조용히 실행되지 않던 문제)이 바로 이 작업 중에 나온 겁니다.
 
 ---
 
