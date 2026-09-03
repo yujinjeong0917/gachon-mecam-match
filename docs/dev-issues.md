@@ -49,12 +49,18 @@
 - 호스팅 프로젝트에서 **Auth → Providers → Anonymous 활성화** 필수. 이게 꺼져 있으면 참가자 신원 체계 전체(로그인 없이 `auth.uid()`로 식별)가 작동하지 않습니다. 로컬은 `supabase/config.toml`의 `enable_anonymous_sign_ins = true`로 이미 켜져 있지만 이 파일은 로컬 전용이라 호스팅 프로젝트엔 영향 없습니다.
 - Vercel에 `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` 환경변수 추가 (`vercel env ls` 확인 결과 아직 없음). service role 키는 절대 `VITE_` 접두어를 붙이면 안 됩니다.
 - 실제 운영자 계정 생성 + `private.operator_roles`에 role 부여
-- **git commit 여부** — 오늘 변경분(마이그레이션 1개 + grant 수정 1개, 프론트 신규 파일 6개 + 기존 파일 약 15개 수정)이 전부 워킹 트리에만 있습니다.
 
 ### 기능적으로 아직 안 됨
 - **복구 코드로 다른 기기에서 재접속하는 기능** — `recovery_code_hash` 컬럼은 있지만, 그 코드로 세션을 다시 연결해주는 RPC는 아직 없습니다. 지금은 같은 브라우저(로컬스토리지)를 벗어나면 복구가 안 됩니다.
-- **관리자 패널 중 매칭 실행 화면(`MatchingRunPanel`) 외 3개** — `OverviewPanel`(전체 현황), `QueuePanel`(치트키 승인 대기열), `EventControlPanel`(결과 공개 on/off)은 아직 mock 데이터입니다. 다만 이 셋이 필요로 하는 RPC(`admin_overview`, `admin_list_cheatkey_queue`, `admin_unlock_cheatkey`, `admin_set_result_reveal`)는 이미 작성·테스트까지 끝나 있어서, 화면 쪽 연결만 남았습니다.
 - 미션 체크리스트(치트키 안쪽 1·2·3 체크박스)는 여전히 로컬 상태일 뿐 서버에 기록되지 않습니다 — 다만 이건 의도된 것입니다. 실제 미션 인증은 참가자가 인스타그램 DM으로 보내고 운영진이 직접 확인하는 방식이라, 앱 안의 체크는 개인용 체크리스트 이상의 의미가 없습니다.
+- 운영 대기열은 지금 "팔로우 확인"만 다룹니다. 코드 복구·신고·재배정은 스키마 자체가 없어서 대기열에 안 넣었습니다 — 필요하면 별도로 설계해야 합니다.
+
+### 2026-09-04 추가로 연결 완료 (관리자 패널 나머지 3개)
+- **`OverviewPanel`** — `admin_overview`/`admin_list_cheatkey_queue` RPC로 실제 참가자 수·대기·매칭완료·확인대기 현황 표시. 20초 간격 자동 새로고침.
+- **`QueuePanel`** — 실제 팔로우 확인 대기열 표시 + "승인" 버튼으로 `admin_unlock_cheatkey` 즉시 호출.
+- **`EventControlPanel`** — 5개 스위치(`registration_open`/`matching_enabled`/`result_reveal_enabled`/`cheat_unlock_enabled`/`fallback_mode`) 전부 `admin_get_event_features`/`admin_set_event_feature`(신규 RPC, `20260904030000_admin_feature_flags.sql`)로 실제 DB에 반영. 랜딩 페이지도 `registration_open`을 실제로 읽어서 접수 마감 화면을 보여주도록 연결 — "지금 접수 잠그기"를 누르면 참가자 화면이 실시간으로 바뀌는 것까지 브라우저에서 확인함.
+
+이제 관리자 패널 5개(개요/접수퍼널 제외/매칭실행/운영대기열/행사제어) 중 **접수 퍼널만 mock으로 남아있습니다.** (참가자 유입 단계별 이탈률 같은 분석용 패널이라 우선순위가 낮다고 판단해 이번엔 손대지 않았습니다.)
 
 ---
 
