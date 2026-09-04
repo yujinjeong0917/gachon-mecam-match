@@ -1,9 +1,11 @@
 -- 매칭 로직 검증용 시드 데이터. 실제 서비스 데이터가 아니다.
 
 insert into public.events (id, slug, name, starts_at, ends_at, status)
-values ('11111111-1111-1111-1111-111111111111', 'gachon-medical-fall-2026', '72시간 소개팅', '2026-09-21 10:00+09', '2026-09-22 18:00+09', 'registration_open');
+values ('11111111-1111-1111-1111-111111111111', 'gachon-medical-fall-2026', '72시간 메캠팅', '2026-09-21 12:00+09', '2026-09-22 17:00+09', 'registration_open')
+on conflict (id) do nothing;
 
-insert into public.event_features (event_id) values ('11111111-1111-1111-1111-111111111111');
+insert into public.event_features (event_id) values ('11111111-1111-1111-1111-111111111111')
+on conflict (event_id) do nothing;
 
 do $$
 declare
