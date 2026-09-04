@@ -5,6 +5,7 @@ import { Field } from "../components/Field";
 import { ProgressSteps } from "../components/ProgressSteps";
 import { RadioGroup } from "../components/RadioGroup";
 import { useDraft } from "../context/DraftContext";
+import { validateNickname, validateOneLiner } from "../lib/validation";
 import "./SurveyScreen.css";
 
 const GRADE_OPTIONS = ["1학년", "2학년", "3학년", "4학년", "5학년", "6학년"];
@@ -25,9 +26,13 @@ const MBTI_OPTIONS = [
 export function SurveyBasicInfoScreen({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { draft, updateDraft } = useDraft();
   const [saved, setSaved] = useState(true);
+  const [nicknameTouched, setNicknameTouched] = useState(false);
   const initialCustomDept = draft.department !== "" && !PRESET_DEPARTMENTS.includes(draft.department);
   const [customDeptMode, setCustomDeptMode] = useState(initialCustomDept);
   const [customDeptText, setCustomDeptText] = useState(initialCustomDept ? draft.department : "");
+
+  const nicknameError = validateNickname(draft.nickname);
+  const oneLinerError = validateOneLiner(draft.oneLiner);
 
   const patch = (fields: Partial<typeof draft>) => {
     updateDraft(fields);
@@ -44,7 +49,7 @@ export function SurveyBasicInfoScreen({ onNext, onBack }: { onNext: () => void; 
     }
   };
 
-  const canProceed = draft.nickname.trim().length > 0 && draft.department.trim().length > 0 && draft.gender !== "" && draft.grade !== null;
+  const canProceed = !nicknameError && !oneLinerError && draft.department.trim().length > 0 && draft.gender !== "" && draft.grade !== null;
 
   return (
     <section className="survey">
@@ -62,6 +67,8 @@ export function SurveyBasicInfoScreen({ onNext, onBack }: { onNext: () => void; 
           maxLength={20}
           value={draft.nickname}
           onChange={(e) => patch({ nickname: e.target.value })}
+          onBlur={() => setNicknameTouched(true)}
+          error={nicknameTouched ? (nicknameError ?? undefined) : undefined}
           helper="최대 20자"
         />
       </div>
