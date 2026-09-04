@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AdminTutorial } from "./admin/AdminTutorial";
 import { EventControlPanel } from "./admin/EventControlPanel";
 import { FunnelPanel } from "./admin/FunnelPanel";
 import { MatchingRunPanel } from "./admin/MatchingRunPanel";
@@ -12,12 +13,19 @@ type Tab = (typeof TABS)[number];
 /** 문서01 §6 필수 위젯을 탭으로 분리. 결정·화려한 효과는 배제하고 운영 판단에 필요한 정보 밀도를 우선한다. */
 export function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("개요");
+  const [tutorialReplay, setTutorialReplay] = useState(false);
 
   return (
     <div className="admin">
       <aside className="admin__sidebar">
         {TABS.map((item) => (
-          <button key={item} type="button" className={`admin__nav-item${tab === item ? " is-active" : ""}`} onClick={() => setTab(item)}>
+          <button
+            key={item}
+            type="button"
+            data-tutorial={`nav-${item}`}
+            className={`admin__nav-item${tab === item ? " is-active" : ""}`}
+            onClick={() => setTab(item)}
+          >
             {item}
           </button>
         ))}
@@ -33,6 +41,9 @@ export function AdminDashboard() {
             <span className="admin__health-dot admin__health-dot--ok" /> Sentry
           </div>
           <span className="admin__next-run">오늘 매칭 실행 16:00</span>
+          <button type="button" className="admin__tutorial-replay" onClick={() => setTutorialReplay(true)}>
+            튜토리얼 다시 보기
+          </button>
         </header>
 
         {tab === "개요" ? <OverviewPanel /> : null}
@@ -41,6 +52,8 @@ export function AdminDashboard() {
         {tab === "운영 대기열" ? <QueuePanel /> : null}
         {tab === "행사 제어" ? <EventControlPanel /> : null}
       </main>
+
+      <AdminTutorial currentTab={tab} onNavigate={setTab} forceOpen={tutorialReplay} onClose={() => setTutorialReplay(false)} />
     </div>
   );
 }

@@ -1,0 +1,72 @@
+.admin-tutorial__catcher {
+  position: fixed;
+  inset: 0;
+  z-index: 301;
+  cursor: pointer;
+}
+
+.admin-tutorial__spotlight {
+  position: fixed;
+  z-index: 300;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(15, 15, 20, 0.78);
+  transition:
+    top 0.2s ease,
+    left 0.2s ease,
+    width 0.2s ease,
+    height 0.2s ease;
+  pointer-events: none;
+}
+
+.admin-tutorial__bubble {
+  position: fixed;
+  z-index: 302;
+  max-width: 280px;
+  background: #fff;
+  color: #1a1a1a;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.admin-tutorial__bubble p {
+  margin: 0 0 12px;
+}
+
+.admin-tutorial__bubble-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #999;
+}
+
+.admin-tutorial__bubble-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-tutorial__bubble-actions button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px 6px;
+  color: #666;
+}
+
+.admin-tutorial__bubble-actions button:last-child {
+  color: #d1327a;
+  font-weight: 700;
+}
+
+.admin__tutorial-replay {
+  background: none;
+  border: none;
+  color: var(--color-text-muted, #888);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+}

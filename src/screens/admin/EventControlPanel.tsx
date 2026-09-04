@@ -71,6 +71,7 @@ export function EventControlPanel() {
           variant={registrationOpen ? "danger-ghost" : "ghost"}
           disabled={!registrationOpen || pending === "registration_open"}
           onClick={() => toggle("registration_open")}
+          data-tutorial="lock-button"
         >
           {registrationOpen ? "지금 접수 잠그기" : "잠김"}
         </Button>

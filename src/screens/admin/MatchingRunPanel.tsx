@@ -255,7 +255,7 @@ export function MatchingRunPanel() {
         <span className="admin__section-hint">algorithm mutual-v1.0.0 · 대기 {waiting.length}명</span>
       </div>
 
-      <div className="matching-run__export">
+      <div className="matching-run__export" data-tutorial="export-buttons">
         <Button variant="ghost" loading={exportingParticipants} onClick={exportParticipants}>
           전체 참가자 내보내기(CSV) — 매칭 실패 대비
         </Button>
@@ -290,7 +290,13 @@ export function MatchingRunPanel() {
       {phase === "idle" || phase === "previewing" ? (
         <div className="matching-run__idle">
           <p>대기 중인 참가자 전체를 다시 계산해서 후보 매치를 미리 보여줘요. 아직 DB에는 아무것도 쓰지 않아요.</p>
-          <Button variant="primary" loading={phase === "previewing"} disabled={waiting.length < 2} onClick={runPreview}>
+          <Button
+            variant="primary"
+            loading={phase === "previewing"}
+            disabled={waiting.length < 2}
+            onClick={runPreview}
+            data-tutorial="preview-button"
+          >
             미리보기 계산하기
           </Button>
         </div>
