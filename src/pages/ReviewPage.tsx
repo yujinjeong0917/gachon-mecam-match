@@ -18,6 +18,7 @@ const SEEKING_GENDER_CODE: Record<string, string> = {
 };
 
 const CONSENT_POLICY_VERSION = "2026-09-01";
+const RECOVERY_CODE_STORAGE_KEY = "mecam_recovery_code";
 
 export function ReviewPage() {
   const navigate = useNavigate();
@@ -75,7 +76,16 @@ export function ReviewPage() {
   return (
     <ReviewScreen
       onSubmit={handleSubmit}
-      onSubmitted={(result) => navigate("/waiting", { state: result ? { recoveryCode: result.recoveryCode } : undefined })}
+      onSubmitted={(result) => {
+        if (result?.recoveryCode) {
+          try {
+            sessionStorage.setItem(RECOVERY_CODE_STORAGE_KEY, result.recoveryCode);
+          } catch {
+            // 프라이빗 모드 등으로 storage를 못 쓰면 무시한다 — location.state가 여전히 1차 경로다.
+          }
+        }
+        navigate("/waiting", { state: result ? { recoveryCode: result.recoveryCode } : undefined });
+      }}
     />
   );
 }
