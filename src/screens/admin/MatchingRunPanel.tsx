@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "../../components/Button";
 import { useEventSession } from "../../hooks/useEventSession";
+import { downloadCsv, toCsv } from "../../lib/csvExport";
 import { supabase } from "../../lib/supabase";
 
 interface WaitingParticipant {
@@ -30,6 +31,41 @@ interface CommitResult {
   rescue?: { proposed_match_count: number; committed?: { committed_count: number } };
 }
 
+interface MatchExportRow {
+  match_id: string;
+  a_matching_number: string;
+  a_nickname: string;
+  a_department: string;
+  a_grade: number;
+  b_matching_number: string;
+  b_nickname: string;
+  b_department: string;
+  b_grade: number;
+}
+
+interface ParticipantExportRow {
+  matching_number: string;
+  status: string;
+  submitted_at: string;
+  nickname: string;
+  department: string;
+  grade: number;
+  gender_code: string;
+  mbti: string | null;
+  one_liner: string | null;
+  seeking_gender_codes: string[];
+  preferred_grades: number[];
+  self_traits: string[];
+  desired_traits: string[];
+  interests: string[];
+  activities: string[];
+  food_tags: string[];
+  music_tags: string[];
+  conversation_style: string | null;
+  instagram_handle: string | null;
+  phone_number: string | null;
+}
+
 type Phase = "idle" | "previewing" | "previewed" | "committing" | "committed" | "error";
 
 const GENDER_LABEL: Record<string, string> = { male: "남성", female: "여성", other: "기타" };
@@ -47,6 +83,9 @@ export function MatchingRunPanel() {
   const [notificationSent, setNotificationSent] = useState(false);
   const [notifying, setNotifying] = useState(false);
   const [notifyError, setNotifyError] = useState<string | null>(null);
+  const [exportingMatches, setExportingMatches] = useState(false);
+  const [exportingParticipants, setExportingParticipants] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const loadWaiting = useCallback(async () => {
     if (!supabase || !eventId) return;
@@ -146,6 +185,65 @@ export function MatchingRunPanel() {
     }
   };
 
+  const exportMatches = async () => {
+    if (!supabase || !eventId) return;
+    setExportingMatches(true);
+    setExportError(null);
+    const { data, error } = await supabase.rpc("admin_export_matches", { p_event_id: eventId });
+    setExportingMatches(false);
+    if (error) {
+      setExportError(error.message ?? "매칭 결과를 내보내지 못했어요.");
+      return;
+    }
+    const rows = (data ?? []) as MatchExportRow[];
+    const csv = toCsv(rows, [
+      { key: "a_matching_number", label: "매칭번호(A)" },
+      { key: "a_nickname", label: "닉네임(A)" },
+      { key: "a_department", label: "학과(A)" },
+      { key: "a_grade", label: "학년(A)" },
+      { key: "b_matching_number", label: "매칭번호(B)" },
+      { key: "b_nickname", label: "닉네임(B)" },
+      { key: "b_department", label: "학과(B)" },
+      { key: "b_grade", label: "학년(B)" },
+    ]);
+    downloadCsv(`매칭결과_${new Date().toISOString().slice(0, 10)}.csv`, csv);
+  };
+
+  const exportParticipants = async () => {
+    if (!supabase || !eventId) return;
+    setExportingParticipants(true);
+    setExportError(null);
+    const { data, error } = await supabase.rpc("admin_export_participants", { p_event_id: eventId });
+    setExportingParticipants(false);
+    if (error) {
+      setExportError(error.message ?? "참가자 명단을 내보내지 못했어요.");
+      return;
+    }
+    const rows = (data ?? []) as ParticipantExportRow[];
+    const csv = toCsv(rows, [
+      { key: "matching_number", label: "매칭번호" },
+      { key: "status", label: "상태" },
+      { key: "nickname", label: "닉네임" },
+      { key: "department", label: "학과" },
+      { key: "grade", label: "학년" },
+      { key: "gender_code", label: "성별" },
+      { key: "mbti", label: "MBTI" },
+      { key: "one_liner", label: "한마디" },
+      { key: "seeking_gender_codes", label: "희망성별" },
+      { key: "self_traits", label: "성격태그" },
+      { key: "desired_traits", label: "선호성격" },
+      { key: "interests", label: "관심사" },
+      { key: "activities", label: "희망활동" },
+      { key: "food_tags", label: "음식" },
+      { key: "music_tags", label: "음악" },
+      { key: "conversation_style", label: "연락스타일" },
+      { key: "instagram_handle", label: "인스타그램ID" },
+      { key: "phone_number", label: "전화번호" },
+      { key: "submitted_at", label: "제출시각" },
+    ]);
+    downloadCsv(`전체참가자_${new Date().toISOString().slice(0, 10)}.csv`, csv);
+  };
+
   const maxBucket = previewResult ? Math.max(1, ...Object.values(previewResult.score_distribution)) : 1;
   const fallbackCommitted = commitResult?.fallback?.committed_count ?? 0;
   const rescueCommitted = commitResult?.rescue?.committed?.committed_count ?? 0;
@@ -156,6 +254,16 @@ export function MatchingRunPanel() {
         <h2>매칭 실행</h2>
         <span className="admin__section-hint">algorithm mutual-v1.0.0 · 대기 {waiting.length}명</span>
       </div>
+
+      <div className="matching-run__export">
+        <Button variant="ghost" loading={exportingParticipants} onClick={exportParticipants}>
+          전체 참가자 내보내기(CSV) — 매칭 실패 대비
+        </Button>
+        <Button variant="ghost" loading={exportingMatches} onClick={exportMatches}>
+          매칭 결과 내보내기(CSV) — 총학 전달용
+        </Button>
+      </div>
+      {exportError ? <p className="matching-run__notify-error">{exportError}</p> : null}
 
       {genderTotal > 0 ? (
         <div className="matching-run__gender">

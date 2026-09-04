@@ -307,6 +307,18 @@
   padding: 0 20px;
 }
 
+.matching-run__export {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.matching-run__export .app-button {
+  width: auto;
+  padding: 0 16px;
+}
+
 .matching-run__gender {
   margin-bottom: 20px;
 }
