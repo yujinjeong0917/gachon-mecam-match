@@ -49,7 +49,8 @@ export function SurveyBasicInfoScreen({ onNext, onBack }: { onNext: () => void; 
     }
   };
 
-  const canProceed = !nicknameError && !oneLinerError && draft.department.trim().length > 0 && draft.gender !== "" && draft.grade !== null;
+  const canProceed =
+    !nicknameError && !oneLinerError && draft.department.trim().length > 0 && draft.gender !== "" && draft.grade !== null && draft.traits.length > 0;
 
   return (
     <section className="survey">

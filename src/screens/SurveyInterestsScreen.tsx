@@ -93,7 +93,7 @@ export function SurveyInterestsScreen({ onNext, onBack }: { onNext: () => void; 
         <Button variant="ghost" onClick={onBack}>
           이전
         </Button>
-        <Button variant="primary" disabled={draft.interests.length === 0} onClick={onNext}>
+        <Button variant="primary" disabled={draft.interests.length === 0 || draft.food.length === 0} onClick={onNext}>
           다음
         </Button>
       </div>

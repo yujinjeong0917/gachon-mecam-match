@@ -23,7 +23,7 @@ export function SurveyPreferenceScreen({ onNext, onBack }: { onNext: () => void;
     updateDraft({ [key]: next });
   };
 
-  const canProceed = draft.seekingGender !== "" && draft.contactStyle !== "";
+  const canProceed = draft.seekingGender !== "" && draft.contactStyle !== "" && draft.desiredTraits.length > 0 && draft.activities.length > 0;
 
   return (
     <section className="survey">
