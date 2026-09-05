@@ -4,8 +4,9 @@ import webpush from "web-push";
 
 /**
  * 17:00 일괄 알림 발송. 어드민 대시보드의 "지금 일괄 알림 보내기" 버튼이 이 엔드포인트를 호출한다.
- * 참가자 인증이 아직 프런트에 안 붙어 있어(문서03 §4 대응 전) x-admin-token 공유 비밀키로만 막아둔다 —
- * 실제 운영자 로그인이 붙으면 이 토큰 체크를 private.is_operator() 기반 검증으로 교체해야 한다.
+ * 호출자의 Authorization 헤더(운영자 로그인 세션의 access token)로 private.is_operator()를 검증한다.
+ * (예전엔 VITE_ 접두사가 붙은 공유 비밀키로만 막아뒀는데, 그 값이 그대로 공개 JS 번들에 평문으로
+ * 들어가 있어 누구나 꺼내 쓸 수 있었다 — 이제 실제 운영자 로그인이 붙었으니 그 방식으로 교체한다.)
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
@@ -13,8 +14,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  const adminToken = req.headers["x-admin-token"];
-  if (!process.env.ADMIN_NOTIFY_SECRET || adminToken !== process.env.ADMIN_NOTIFY_SECRET) {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  if (!token) {
     res.status(401).json({ error: "unauthorized" });
     return;
   }
@@ -25,8 +27,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    res.status(500).json({ error: "SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not configured" });
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.VITE_SUPABASE_ANON_KEY) {
+    res.status(500).json({ error: "Supabase env vars not configured" });
     return;
   }
   if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
@@ -34,14 +36,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
-    db: { schema: "private" },
+  const callerClient = createClient(process.env.SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
   });
+  const { data: isOperator, error: operatorCheckError } = await callerClient.rpc("am_i_operator", { p_event_id: event_id });
+  if (operatorCheckError || isOperator !== true) {
+    res.status(403).json({ error: "forbidden" });
+    return;
+  }
 
-  const { data: subs, error } = await supabase
-    .from("push_subscriptions")
-    .select("id, endpoint, p256dh, auth")
-    .eq("event_id", event_id);
+  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+  const { data: subs, error } = await supabase.rpc("list_push_subscriptions_for_notify", { p_event_id: event_id });
 
   if (error) {
     res.status(500).json({ error: error.message });
@@ -58,7 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const staleIds: string[] = [];
 
   const results = await Promise.allSettled(
-    (subs ?? []).map((sub) =>
+    (subs ?? []).map((sub: { id: string; endpoint: string; p256dh: string; auth: string }) =>
       webpush
         .sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, payload)
         .catch((err) => {
@@ -70,7 +76,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   );
 
   if (staleIds.length > 0) {
-    await supabase.from("push_subscriptions").delete().in("id", staleIds);
+    await supabase.rpc("delete_push_subscriptions", { p_ids: staleIds });
   }
 
   const sent = results.filter((r) => r.status === "fulfilled").length;

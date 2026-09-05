@@ -156,15 +156,19 @@ export function MatchingRunPanel() {
   };
 
   const sendBulkNotification = async () => {
-    if (!eventId) return;
+    if (!eventId || !supabase) return;
     setNotifying(true);
     setNotifyError(null);
     try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) throw new Error("로그인 세션이 만료됐어요. 다시 로그인해주세요.");
       const res = await fetch("/api/send-push", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-token": import.meta.env.VITE_ADMIN_NOTIFY_SECRET as string,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           event_id: eventId,
