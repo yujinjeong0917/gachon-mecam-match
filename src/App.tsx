@@ -5,6 +5,7 @@ import { ParticipantLayout } from "./layouts/ParticipantLayout";
 import { AdminLoginPage } from "./pages/AdminLoginPage";
 import { AdminPage } from "./pages/AdminPage";
 import { ConsentPage } from "./pages/ConsentPage";
+import { FindResultPage } from "./pages/FindResultPage";
 import { GuidePage } from "./pages/GuidePage";
 import { LandingPage } from "./pages/LandingPage";
 import { ResultPage } from "./pages/ResultPage";
@@ -32,6 +33,7 @@ export default function App() {
               <Route path="/review" element={<ReviewPage />} />
               <Route path="/waiting" element={<WaitingPage />} />
               <Route path="/result" element={<ResultPage />} />
+              <Route path="/find" element={<FindResultPage />} />
             </Route>
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/admin/login" element={<AdminLoginPage />} />
