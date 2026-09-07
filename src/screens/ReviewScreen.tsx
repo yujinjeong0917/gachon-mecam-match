@@ -118,6 +118,10 @@ export function ReviewScreen({ onSubmitted, onSubmit }: Props) {
         <h2 className="review__card-title">운영진만 보는 정보</h2>
         <dl className="review__list">
           <div>
+            <dt>실명</dt>
+            <dd>{draft.realName ? maskHandle(draft.realName) : "-"}</dd>
+          </div>
+          <div>
             <dt>Instagram ID</dt>
             <dd>{draft.instagramHandle ? maskHandle(draft.instagramHandle) : "-"}</dd>
           </div>

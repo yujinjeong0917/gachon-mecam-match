@@ -7,6 +7,13 @@ export function validateNickname(value: string): string | null {
   return null;
 }
 
+export function validateRealName(value: string): string | null {
+  const v = value.trim();
+  if (!v) return "실명을 입력해주세요.";
+  if (v.length > 20) return "이름은 최대 20자까지 입력할 수 있어요.";
+  return null;
+}
+
 const INSTAGRAM_HANDLE_REGEX = /^[a-zA-Z0-9._]{1,30}$/;
 
 export function validateInstagramHandle(value: string): string | null {

@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useDraft } from "../context/DraftContext";
 import { useEventSession } from "../hooks/useEventSession";
 import { supabase } from "../lib/supabase";
-import { normalizePhoneNumber, validateInstagramHandle, validateNickname, validatePhoneNumber } from "../lib/validation";
+import { normalizePhoneNumber, validateInstagramHandle, validateNickname, validatePhoneNumber, validateRealName } from "../lib/validation";
 import { ReviewScreen, type SubmitResult } from "../screens/ReviewScreen";
 
 const GENDER_CODE: Record<string, string> = {
@@ -30,7 +30,11 @@ export function ReviewPage() {
       throw new Error("지금은 서버에 연결할 수 없어요. 잠시 후 다시 시도해주세요.");
     }
 
-    const validationError = validateNickname(draft.nickname) ?? validateInstagramHandle(draft.instagramHandle) ?? validatePhoneNumber(draft.phoneNumber);
+    const validationError =
+      validateNickname(draft.nickname) ??
+      validateRealName(draft.realName) ??
+      validateInstagramHandle(draft.instagramHandle) ??
+      validatePhoneNumber(draft.phoneNumber);
     if (validationError) {
       throw new Error(validationError);
     }
@@ -59,6 +63,7 @@ export function ReviewPage() {
       p_profile_share: true,
       p_instagram_share_if_matched: true,
       p_analytics: draft.analyticsConsent,
+      p_real_name: draft.realName.trim(),
     });
 
     if (error) {

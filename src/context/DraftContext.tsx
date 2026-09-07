@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 
 export interface DraftState {
+  realName: string;
   nickname: string;
   department: string;
   grade: number | null;
@@ -21,6 +22,7 @@ export interface DraftState {
 }
 
 export const INITIAL_DRAFT: DraftState = {
+  realName: "",
   nickname: "",
   department: "",
   grade: null,

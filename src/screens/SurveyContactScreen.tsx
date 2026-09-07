@@ -3,23 +3,40 @@ import { Button } from "../components/Button";
 import { Field } from "../components/Field";
 import { ProgressSteps } from "../components/ProgressSteps";
 import { useDraft } from "../context/DraftContext";
-import { validateInstagramHandle, validatePhoneNumber } from "../lib/validation";
+import { validateInstagramHandle, validatePhoneNumber, validateRealName } from "../lib/validation";
 import "./SurveyScreen.css";
 
-/** 문서01 §3 화면별 흐름 6번 "비공개 연락 정보". instagram_handle·phone_number 모두 private 필드로 분리(문서03 §4). */
+/** 문서01 §3 화면별 흐름 6번 "비공개 연락 정보". instagram_handle·phone_number·real_name 모두 private 필드로 분리(문서03 §4). */
 export function SurveyContactScreen({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { draft, updateDraft } = useDraft();
-  const [touched, setTouched] = useState<{ instagram: boolean; phone: boolean }>({ instagram: false, phone: false });
+  const [touched, setTouched] = useState<{ realName: boolean; instagram: boolean; phone: boolean }>({
+    realName: false,
+    instagram: false,
+    phone: false,
+  });
 
+  const realNameError = validateRealName(draft.realName);
   const instagramError = validateInstagramHandle(draft.instagramHandle);
   const phoneError = validatePhoneNumber(draft.phoneNumber);
-  const canProceed = !instagramError && !phoneError;
+  const canProceed = !realNameError && !instagramError && !phoneError;
 
   return (
     <section className="survey">
       <header className="survey__header">
         <ProgressSteps current={4} total={4} label="비공개 연락 정보" />
       </header>
+
+      <div className="survey__field-group">
+        <Field
+          label="실명"
+          placeholder="주최 측 확인용 실제 이름"
+          value={draft.realName}
+          onChange={(e) => updateDraft({ realName: e.target.value })}
+          onBlur={() => setTouched((t) => ({ ...t, realName: true }))}
+          error={touched.realName ? (realNameError ?? undefined) : undefined}
+          helper="상대에게는 공개되지 않고, 주최 측 명단 확인용으로만 쓰여요."
+        />
+      </div>
 
       <div className="survey__field-group">
         <Field

@@ -58,6 +58,7 @@ export function LandingScreen({ registrationOpen, alreadyJoined = false, onStart
         {EVENT_CONFIG.venue}
       </p>
 
+      <p className="landing__trust">매칭은 매일 {EVENT_CONFIG.matchReleaseTime}에 한 번에 진행돼요.</p>
       <p className="landing__trust">연락 정보는 동의한 경우에만, 팔로우 인증 후 공개해요.</p>
 
       <Button variant="primary" onClick={onStart}>

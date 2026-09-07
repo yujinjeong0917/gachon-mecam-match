@@ -34,13 +34,15 @@ interface CommitResult {
 interface MatchExportRow {
   match_id: string;
   a_matching_number: string;
-  a_nickname: string;
+  a_name: string;
+  a_gender: "male" | "female" | "other";
   a_department: string;
-  a_grade: number;
+  a_phone: string | null;
   b_matching_number: string;
-  b_nickname: string;
+  b_name: string;
+  b_gender: "male" | "female" | "other";
   b_department: string;
-  b_grade: number;
+  b_phone: string | null;
 }
 
 interface ParticipantExportRow {
@@ -66,9 +68,45 @@ interface ParticipantExportRow {
   phone_number: string | null;
 }
 
+interface ActiveMatch {
+  match_id: string;
+  score: number;
+  a_matching_number: string;
+  a_nickname: string;
+  b_matching_number: string;
+  b_nickname: string;
+}
+
 type Phase = "idle" | "previewing" | "previewed" | "committing" | "committed" | "error";
 
 const GENDER_LABEL: Record<string, string> = { male: "남성", female: "여성", other: "기타" };
+
+async function sendMatchNotification(eventId: string): Promise<{ ok: boolean; error?: string }> {
+  if (!supabase) return { ok: false, error: "서버에 연결할 수 없어요." };
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return { ok: false, error: "로그인 세션이 만료됐어요. 다시 로그인해주세요." };
+  try {
+    const res = await fetch("/api/send-push", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({
+        event_id: eventId,
+        title: "매칭 결과가 도착했어요",
+        body: "지금 앱을 열어 결과를 확인해 보세요",
+        url: "/result",
+      }),
+    });
+    if (!res.ok) {
+      const detail = await res.json().catch(() => null);
+      return { ok: false, error: detail?.error ?? `요청 실패 (${res.status})` };
+    }
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "알 수 없는 오류" };
+  }
+}
 
 /** 문서03 §5 POST /admin/matching-runs/preview·commit 실제 연동. */
 export function MatchingRunPanel() {
@@ -83,9 +121,14 @@ export function MatchingRunPanel() {
   const [notificationSent, setNotificationSent] = useState(false);
   const [notifying, setNotifying] = useState(false);
   const [notifyError, setNotifyError] = useState<string | null>(null);
+  const [testNotifying, setTestNotifying] = useState(false);
+  const [testNotifyResult, setTestNotifyResult] = useState<string | null>(null);
   const [exportingMatches, setExportingMatches] = useState(false);
   const [exportingParticipants, setExportingParticipants] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [quickRunning, setQuickRunning] = useState(false);
+  const [activeMatches, setActiveMatches] = useState<ActiveMatch[]>([]);
+  const [unmatchingId, setUnmatchingId] = useState<string | null>(null);
 
   const loadWaiting = useCallback(async () => {
     if (!supabase || !eventId) return;
@@ -93,14 +136,34 @@ export function MatchingRunPanel() {
     if (data) setWaiting((data as WaitingParticipant[]).filter((p) => p.active_match_count === 0));
   }, [eventId]);
 
+  const loadActiveMatches = useCallback(async () => {
+    if (!supabase || !eventId) return;
+    const { data } = await supabase.rpc("admin_list_active_matches", { p_event_id: eventId });
+    if (data) setActiveMatches(data as ActiveMatch[]);
+  }, [eventId]);
+
   useEffect(() => {
     loadWaiting();
-  }, [loadWaiting]);
+    loadActiveMatches();
+  }, [loadWaiting, loadActiveMatches]);
 
   const genderBreakdown = ["male", "female", "other"]
     .map((code) => ({ code, label: GENDER_LABEL[code], count: waiting.filter((p) => p.gender_code === code).length }))
     .filter((g) => g.count > 0);
   const genderTotal = waiting.length;
+
+  const notifyAfterCommit = async () => {
+    if (!eventId) return;
+    setNotifying(true);
+    setNotifyError(null);
+    const result = await sendMatchNotification(eventId);
+    setNotifying(false);
+    if (result.ok) {
+      setNotificationSent(true);
+    } else {
+      setNotifyError(result.error ?? "알 수 없는 오류");
+    }
+  };
 
   const runPreview = async () => {
     if (!supabase || !eventId) return;
@@ -128,7 +191,43 @@ export function MatchingRunPanel() {
     }
     setCommitResult(data as CommitResult);
     setPhase("committed");
+    setNotificationSent(false);
     loadWaiting();
+    loadActiveMatches();
+    if (eventId) void notifyAfterCommit();
+  };
+
+  /** "지금 바로 매칭 실행" — 미리보기 검토 없이 미리보기+확정을 한 번에 처리한다. */
+  const runQuickMatch = async () => {
+    if (!supabase || !eventId) return;
+    setQuickRunning(true);
+    setErrorMessage(null);
+    setPhase("previewing");
+    const { data: preview, error: previewError } = await supabase.rpc("admin_run_matching_preview", { p_event_id: eventId });
+    if (previewError || !preview) {
+      setErrorMessage(previewError?.message ?? "미리보기 계산에 실패했어요.");
+      setPhase("error");
+      setQuickRunning(false);
+      return;
+    }
+    const previewData = preview as PreviewResult;
+    setPreviewResult(previewData);
+    setPhase("committing");
+    const { data: committed, error: commitError } = await supabase.rpc("admin_commit_matching_run_with_fallback", {
+      p_run_id: previewData.run_id,
+    });
+    setQuickRunning(false);
+    if (commitError || !committed) {
+      setErrorMessage(commitError?.message ?? "확정에 실패했어요.");
+      setPhase("error");
+      return;
+    }
+    setCommitResult(committed as CommitResult);
+    setPhase("committed");
+    setNotificationSent(false);
+    loadWaiting();
+    loadActiveMatches();
+    void notifyAfterCommit();
   };
 
   const reset = () => {
@@ -152,13 +251,27 @@ export function MatchingRunPanel() {
     const { error } = await supabase.rpc("admin_manual_match", { p_event_id: eventId, p_participant_a: pendingPick, p_participant_b: id });
     setPendingPick(null);
     setManualMatching(false);
-    if (!error) await loadWaiting();
+    if (!error) {
+      await loadWaiting();
+      await loadActiveMatches();
+    }
   };
 
-  const sendBulkNotification = async () => {
+  const unmatch = async (matchId: string) => {
+    if (!supabase || !eventId) return;
+    setUnmatchingId(matchId);
+    const { error } = await supabase.rpc("admin_unmatch", { p_event_id: eventId, p_match_id: matchId });
+    setUnmatchingId(null);
+    if (!error) {
+      await loadWaiting();
+      await loadActiveMatches();
+    }
+  };
+
+  const sendTestNotification = async () => {
     if (!eventId || !supabase) return;
-    setNotifying(true);
-    setNotifyError(null);
+    setTestNotifying(true);
+    setTestNotifyResult(null);
     try {
       const {
         data: { session },
@@ -166,26 +279,21 @@ export function MatchingRunPanel() {
       if (!session) throw new Error("로그인 세션이 만료됐어요. 다시 로그인해주세요.");
       const res = await fetch("/api/send-push", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({
           event_id: eventId,
-          title: "매칭 결과가 도착했어요",
-          body: "지금 앱을 열어 결과를 확인해 보세요",
-          url: "/result",
+          title: "[테스트] 알림 점검",
+          body: "이 알림이 보이면 푸시 알림이 정상 작동하는 거예요.",
+          url: "/waiting",
         }),
       });
-      if (!res.ok) {
-        const detail = await res.json().catch(() => null);
-        throw new Error(detail?.error ?? `요청 실패 (${res.status})`);
-      }
-      setNotificationSent(true);
+      const detail = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(detail?.error ?? `요청 실패 (${res.status})`);
+      setTestNotifyResult(`발송 완료 — 대상 ${detail?.total ?? 0}건 중 성공 ${detail?.sent ?? 0}건`);
     } catch (err) {
-      setNotifyError(err instanceof Error ? err.message : "알 수 없는 오류");
+      setTestNotifyResult(`실패: ${err instanceof Error ? err.message : "알 수 없는 오류"}`);
     } finally {
-      setNotifying(false);
+      setTestNotifying(false);
     }
   };
 
@@ -200,16 +308,21 @@ export function MatchingRunPanel() {
       return;
     }
     const rows = (data ?? []) as MatchExportRow[];
-    const csv = toCsv(rows, [
-      { key: "a_matching_number", label: "매칭번호(A)" },
-      { key: "a_nickname", label: "닉네임(A)" },
-      { key: "a_department", label: "학과(A)" },
-      { key: "a_grade", label: "학년(A)" },
-      { key: "b_matching_number", label: "매칭번호(B)" },
-      { key: "b_nickname", label: "닉네임(B)" },
-      { key: "b_department", label: "학과(B)" },
-      { key: "b_grade", label: "학년(B)" },
-    ]);
+    const csv = toCsv(
+      rows.map((r) => ({ ...r, a_gender: GENDER_LABEL[r.a_gender] ?? r.a_gender, b_gender: GENDER_LABEL[r.b_gender] ?? r.b_gender })),
+      [
+        { key: "a_matching_number", label: "매칭번호(A)" },
+        { key: "a_name", label: "이름(A)" },
+        { key: "a_gender", label: "성별(A)" },
+        { key: "a_department", label: "학과(A)" },
+        { key: "a_phone", label: "전화번호(A)" },
+        { key: "b_matching_number", label: "매칭번호(B)" },
+        { key: "b_name", label: "이름(B)" },
+        { key: "b_gender", label: "성별(B)" },
+        { key: "b_department", label: "학과(B)" },
+        { key: "b_phone", label: "전화번호(B)" },
+      ],
+    );
     downloadCsv(`매칭결과_${new Date().toISOString().slice(0, 10)}.csv`, csv);
   };
 
@@ -266,8 +379,12 @@ export function MatchingRunPanel() {
         <Button variant="ghost" loading={exportingMatches} onClick={exportMatches}>
           매칭 결과 내보내기(CSV) — 총학 전달용
         </Button>
+        <Button variant="ghost" loading={testNotifying} onClick={sendTestNotification}>
+          테스트 알림 보내기
+        </Button>
       </div>
       {exportError ? <p className="matching-run__notify-error">{exportError}</p> : null}
+      {testNotifyResult ? <p className="admin__section-hint">{testNotifyResult}</p> : null}
 
       {genderTotal > 0 ? (
         <div className="matching-run__gender">
@@ -294,15 +411,20 @@ export function MatchingRunPanel() {
       {phase === "idle" || phase === "previewing" ? (
         <div className="matching-run__idle">
           <p>대기 중인 참가자 전체를 다시 계산해서 후보 매치를 미리 보여줘요. 아직 DB에는 아무것도 쓰지 않아요.</p>
-          <Button
-            variant="primary"
-            loading={phase === "previewing"}
-            disabled={waiting.length < 2}
-            onClick={runPreview}
-            data-tutorial="preview-button"
-          >
-            미리보기 계산하기
-          </Button>
+          <div className="matching-run__actions">
+            <Button
+              variant="primary"
+              loading={phase === "previewing" && !quickRunning}
+              disabled={waiting.length < 2}
+              onClick={runPreview}
+              data-tutorial="preview-button"
+            >
+              미리보기 계산하기
+            </Button>
+            <Button variant="ghost" loading={quickRunning} disabled={waiting.length < 2} onClick={runQuickMatch}>
+              지금 바로 매칭 실행(검토 없이 즉시 확정)
+            </Button>
+          </div>
         </div>
       ) : null}
 
@@ -397,19 +519,41 @@ export function MatchingRunPanel() {
           {phase === "committed" ? (
             <div className="matching-run__notify">
               <h3 className="matching-run__subtitle">일괄 알림</h3>
-              {notificationSent ? (
-                <p>일괄 알림을 보냈어요.</p>
+              {notifying ? (
+                <p>확정된 매칭 참가자에게 알림을 보내는 중이에요…</p>
+              ) : notificationSent ? (
+                <p>매칭 확정과 함께 일괄 알림을 보냈어요.</p>
               ) : (
                 <>
-                  <p>매칭 결과를 확인한 참가자에게 일괄로 알려요(Web Push).</p>
                   {notifyError ? <p className="matching-run__notify-error">발송 실패: {notifyError}</p> : null}
-                  <Button variant="primary" loading={notifying} onClick={sendBulkNotification}>
-                    지금 일괄 알림 보내기
+                  <Button variant="primary" loading={notifying} onClick={notifyAfterCommit}>
+                    지금 다시 알림 보내기
                   </Button>
                 </>
               )}
             </div>
           ) : null}
+        </div>
+      ) : null}
+
+      {activeMatches.length > 0 ? (
+        <div className="matching-run__unmatch">
+          <h3 className="matching-run__subtitle">지금 확정된 매칭 — {activeMatches.length}쌍</h3>
+          <p className="matching-run__manual-hint">잘못 매칭된 경우 여기서 해제할 수 있어요. 해제하면 두 사람 모두 다시 대기 상태가 돼요.</p>
+          <ul className="matching-run__manual-list">
+            {activeMatches.map((m) => (
+              <li key={m.match_id}>
+                <div className="matching-run__unmatch-row">
+                  <span className="matching-run__manual-name">
+                    {m.a_matching_number} {m.a_nickname} ↔ {m.b_matching_number} {m.b_nickname}
+                  </span>
+                  <Button variant="danger-ghost" loading={unmatchingId === m.match_id} onClick={() => unmatch(m.match_id)}>
+                    매칭 해제
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       ) : null}
     </section>

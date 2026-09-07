@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { useEffect, useLayoutEffect, useState } from "react";
 import "./AdminTutorial.css";
 
-export type AdminTab = "개요" | "접수 퍼널" | "매칭 실행" | "운영 대기열" | "행사 제어";
+export type AdminTab = "개요" | "참가자 관리" | "접수 퍼널" | "매칭 실행" | "운영 대기열" | "행사 제어";
 
 interface TutorialStep {
   tab: AdminTab;
