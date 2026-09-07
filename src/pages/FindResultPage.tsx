@@ -23,16 +23,31 @@ interface LookupResult {
   partner?: Partner;
 }
 
-/** 신청했던 기기가 아닌 곳(문자로 받은 링크 등)에서, 매칭번호+복구코드로 내 상태를 다시 확인하는 화면. */
+type Mode = "code" | "nickname";
+
+/** 신청했던 기기가 아닌 곳(문자로 받은 링크 등)에서 내 상태를 다시 확인하는 화면. */
 export function FindResultPage() {
   const { eventId } = useEventSession();
+  const [mode, setMode] = useState<Mode>("code");
   const [matchingNumber, setMatchingNumber] = useState("");
   const [recoveryCode, setRecoveryCode] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [phoneLast4, setPhoneLast4] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<LookupResult | null>(null);
 
-  const canSubmit = matchingNumber.trim().length > 0 && recoveryCode.trim().length > 0 && !!eventId;
+  const canSubmit =
+    !!eventId &&
+    (mode === "code"
+      ? matchingNumber.trim().length > 0 && recoveryCode.trim().length > 0
+      : nickname.trim().length > 0 && phoneLast4.trim().length === 4);
+
+  const switchMode = (next: Mode) => {
+    setMode(next);
+    setResult(null);
+    setError(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,11 +55,18 @@ export function FindResultPage() {
     setLoading(true);
     setError(null);
     setResult(null);
-    const { data, error: rpcError } = await supabase.rpc("lookup_by_recovery_code", {
-      p_event_id: eventId,
-      p_matching_number: matchingNumber.trim(),
-      p_recovery_code: recoveryCode.trim(),
-    });
+    const { data, error: rpcError } =
+      mode === "code"
+        ? await supabase.rpc("lookup_by_recovery_code", {
+            p_event_id: eventId,
+            p_matching_number: matchingNumber.trim(),
+            p_recovery_code: recoveryCode.trim(),
+          })
+        : await supabase.rpc("lookup_by_nickname_phone", {
+            p_event_id: eventId,
+            p_nickname: nickname.trim(),
+            p_phone_last4: phoneLast4.trim(),
+          });
     setLoading(false);
     if (rpcError) {
       setError("조회에 실패했어요. 잠시 후 다시 시도해주세요.");
@@ -56,20 +78,49 @@ export function FindResultPage() {
   return (
     <section className="find-result">
       <h1>내 결과 다시 찾기</h1>
-      <p className="find-result__lead">
-        신청했던 기기가 아니어도, 신청 직후 받았던 매칭번호와 복구 코드로 상태를 확인할 수 있어요.
-      </p>
+      <p className="find-result__lead">신청했던 기기가 아니어도, 아래 정보로 지금 상태를 확인할 수 있어요.</p>
+
+      <div className="find-result__tabs">
+        <button type="button" className={`find-result__tab${mode === "code" ? " is-active" : ""}`} onClick={() => switchMode("code")}>
+          매칭번호 + 복구코드
+        </button>
+        <button type="button" className={`find-result__tab${mode === "nickname" ? " is-active" : ""}`} onClick={() => switchMode("nickname")}>
+          복구코드를 몰라요
+        </button>
+      </div>
 
       <form onSubmit={handleSubmit} className="find-result__form">
-        <Field label="매칭번호" placeholder="예: M-012" value={matchingNumber} onChange={(e) => setMatchingNumber(e.target.value)} />
-        <Field
-          label="복구 코드"
-          placeholder="6자리 숫자"
-          inputMode="numeric"
-          maxLength={6}
-          value={recoveryCode}
-          onChange={(e) => setRecoveryCode(e.target.value)}
-        />
+        {mode === "code" ? (
+          <>
+            <Field label="매칭번호" placeholder="예: M-012" value={matchingNumber} onChange={(e) => setMatchingNumber(e.target.value)} />
+            <Field
+              label="복구 코드"
+              placeholder="6자리 숫자"
+              inputMode="numeric"
+              maxLength={6}
+              value={recoveryCode}
+              onChange={(e) => setRecoveryCode(e.target.value)}
+            />
+          </>
+        ) : (
+          <>
+            <Field
+              label="신청할 때 쓴 닉네임"
+              placeholder="예: 가을밤"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              helper="설문에 적었던 닉네임 그대로 입력해주세요."
+            />
+            <Field
+              label="전화번호 뒷자리 4자리"
+              placeholder="예: 5678"
+              inputMode="numeric"
+              maxLength={4}
+              value={phoneLast4}
+              onChange={(e) => setPhoneLast4(e.target.value.replace(/\D/g, ""))}
+            />
+          </>
+        )}
         <Button type="submit" variant="primary" loading={loading} disabled={!canSubmit}>
           조회하기
         </Button>
@@ -77,7 +128,11 @@ export function FindResultPage() {
 
       {error ? <p className="find-result__error">{error}</p> : null}
 
-      {result?.status === "not_found" ? <p className="find-result__error">매칭번호 또는 복구 코드가 일치하지 않아요.</p> : null}
+      {result?.status === "not_found" ? (
+        <p className="find-result__error">
+          {mode === "code" ? "매칭번호 또는 복구 코드가 일치하지 않아요." : "입력하신 정보와 일치하는 신청 내역을 찾을 수 없어요."}
+        </p>
+      ) : null}
 
       {result?.status === "waiting" ? (
         <div className="find-result__card">

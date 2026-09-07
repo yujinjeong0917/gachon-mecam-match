@@ -19,6 +19,30 @@
   color: var(--color-text-muted);
 }
 
+.find-result__tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.find-result__tab {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.find-result__tab.is-active {
+  border-color: var(--color-walnut);
+  color: var(--color-text-strong);
+  background: var(--color-surface-strong, var(--color-surface));
+}
+
 .find-result__form {
   display: flex;
   flex-direction: column;
