@@ -101,6 +101,9 @@ function mapSubmitError(message: string): string {
   if (message.includes("MISSING_REQUIRED_FIELD")) return "닉네임·학과를 다시 확인해주세요.";
   if (message.includes("INVALID_NICKNAME")) return "닉네임을 다시 확인해주세요.";
   if (message.includes("INVALID_INSTAGRAM_HANDLE")) return "Instagram ID 형식을 다시 확인해주세요.";
+  if (message.includes("DUPLICATE_INSTAGRAM_HANDLE") || message.includes("private_contacts_event_handle_uq")) {
+    return "이미 다른 사람이 사용 중인 Instagram ID예요. 본인 계정으로 다시 입력해주세요.";
+  }
   if (message.includes("INVALID_PHONE_NUMBER")) return "전화번호 형식을 다시 확인해주세요.";
   return "제출에 실패했어요. 잠시 후 다시 시도해주세요.";
 }
