@@ -81,6 +81,14 @@ type Phase = "idle" | "previewing" | "previewed" | "committing" | "committed" | 
 
 const GENDER_LABEL: Record<string, string> = { male: "남성", female: "여성", other: "기타" };
 
+function friendlyMatchingError(message?: string): string {
+  if (!message) return "요청에 실패했어요.";
+  if (message.includes("ACTIVE_PREVIEW_EXISTS")) {
+    return "아직 확정하지 않은 이전 미리보기가 남아있어요. 아래 '초기화하고 다시 계산'을 눌러주세요.";
+  }
+  return message;
+}
+
 async function sendMatchNotification(eventId: string): Promise<{ ok: boolean; error?: string }> {
   if (!supabase) return { ok: false, error: "서버에 연결할 수 없어요." };
   const {
@@ -127,6 +135,7 @@ export function MatchingRunPanel() {
   const [exportingParticipants, setExportingParticipants] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const [quickRunning, setQuickRunning] = useState(false);
+  const [discardingPreview, setDiscardingPreview] = useState(false);
   const [activeMatches, setActiveMatches] = useState<ActiveMatch[]>([]);
   const [unmatchingId, setUnmatchingId] = useState<string | null>(null);
 
@@ -235,6 +244,19 @@ export function MatchingRunPanel() {
     setPreviewResult(null);
     setCommitResult(null);
     setErrorMessage(null);
+  };
+
+  /** ACTIVE_PREVIEW_EXISTS 복구용 — 확정도 폐기도 안 된 이전 미리보기를 정리하고 다시 계산한다. */
+  const discardAndRetry = async () => {
+    if (!supabase || !eventId) return;
+    setDiscardingPreview(true);
+    const { error } = await supabase.rpc("admin_discard_active_preview", { p_event_id: eventId });
+    setDiscardingPreview(false);
+    if (error) {
+      setErrorMessage(error.message);
+      return;
+    }
+    await runPreview();
   };
 
   const pickForManualMatch = async (id: string) => {
@@ -406,7 +428,16 @@ export function MatchingRunPanel() {
         <p className="admin__section-hint">지금 대기 중인 참가자가 없어요.</p>
       )}
 
-      {errorMessage ? <p className="matching-run__notify-error">{errorMessage}</p> : null}
+      {errorMessage ? (
+        <div className="matching-run__idle">
+          <p className="matching-run__notify-error">{friendlyMatchingError(errorMessage)}</p>
+          {errorMessage.includes("ACTIVE_PREVIEW_EXISTS") ? (
+            <Button variant="ghost" loading={discardingPreview} onClick={discardAndRetry}>
+              초기화하고 다시 계산
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
 
       {phase === "idle" || phase === "previewing" ? (
         <div className="matching-run__idle">
