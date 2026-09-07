@@ -1,7 +1,9 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDraft } from "../context/DraftContext";
+import { clearPersistedDraft, useDraft } from "../context/DraftContext";
 import { useEventSession } from "../hooks/useEventSession";
 import { supabase } from "../lib/supabase";
+import { firstIncompleteStep } from "../lib/surveyProgress";
 import { normalizePhoneNumber, validateInstagramHandle, validateNickname, validatePhoneNumber, validateRealName } from "../lib/validation";
 import { ReviewScreen, type SubmitResult } from "../screens/ReviewScreen";
 
@@ -24,6 +26,11 @@ export function ReviewPage() {
   const navigate = useNavigate();
   const { draft } = useDraft();
   const { eventId } = useEventSession();
+
+  useEffect(() => {
+    const missingStep = firstIncompleteStep(draft);
+    if (missingStep) navigate(missingStep, { replace: true });
+  }, [draft, navigate]);
 
   const handleSubmit = async (): Promise<SubmitResult> => {
     if (!supabase || !eventId) {
@@ -89,6 +96,7 @@ export function ReviewPage() {
             // 프라이빗 모드 등으로 storage를 못 쓰면 무시한다 — location.state가 여전히 1차 경로다.
           }
         }
+        clearPersistedDraft();
         navigate("/waiting", { state: result ? { recoveryCode: result.recoveryCode } : undefined });
       }}
     />
@@ -96,6 +104,8 @@ export function ReviewPage() {
 }
 
 function mapSubmitError(message: string): string {
+  if (message.includes("AUTH_REQUIRED")) return "로그인 세션에 문제가 생겼어요. 페이지를 새로고침한 뒤 다시 시도해주세요.";
+  if (message.includes("EVENT_NOT_FOUND")) return "지금은 행사 정보를 불러올 수 없어요. 페이지를 새로고침해주세요.";
   if (message.includes("REGISTRATION_CLOSED")) return "지금은 접수 기간이 아니에요.";
   if (message.includes("REQUIRED_CONSENT_MISSING")) return "필수 동의 항목을 다시 확인해주세요.";
   if (message.includes("MISSING_REQUIRED_FIELD")) return "닉네임·학과를 다시 확인해주세요.";
