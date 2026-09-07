@@ -154,6 +154,12 @@ export function MatchingRunPanel() {
   useEffect(() => {
     loadWaiting();
     loadActiveMatches();
+    // 대기 인원·성비는 접수 도중 계속 바뀌므로 QueuePanel과 동일하게 주기적으로 갱신한다.
+    const id = window.setInterval(() => {
+      loadWaiting();
+      loadActiveMatches();
+    }, 15000);
+    return () => window.clearInterval(id);
   }, [loadWaiting, loadActiveMatches]);
 
   const genderBreakdown = ["male", "female", "other"]

@@ -36,14 +36,18 @@ export function WaitingScreen({ matchingNumber, recoveryCode, nextMatchingAt, on
 
   const requestPush = async () => {
     setPushState("subscribing");
-    const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-    const subscription = vapidPublicKey ? await subscribeToPush(vapidPublicKey) : null;
-    if (!subscription) {
+    try {
+      const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+      const subscription = vapidPublicKey ? await subscribeToPush(vapidPublicKey) : null;
+      if (!subscription) {
+        setPushState("denied");
+        return;
+      }
+      const saved = onSubscribed ? await onSubscribed(subscription) : true;
+      setPushState(saved ? "subscribed" : "denied");
+    } catch {
       setPushState("denied");
-      return;
     }
-    const saved = onSubscribed ? await onSubscribed(subscription) : true;
-    setPushState(saved ? "subscribed" : "denied");
   };
 
   return (
