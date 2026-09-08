@@ -389,7 +389,7 @@ export function MatchingRunPanel() {
     downloadCsv(`전체참가자_${new Date().toISOString().slice(0, 10)}.csv`, csv);
   };
 
-  const maxBucket = previewResult ? Math.max(1, ...Object.values(previewResult.score_distribution)) : 1;
+  const maxBucket = previewResult ? Math.max(1, ...Object.values(previewResult.score_distribution ?? {})) : 1;
   const fallbackCommitted = commitResult?.fallback?.committed_count ?? 0;
   const rescueCommitted = commitResult?.rescue?.committed?.committed_count ?? 0;
 
