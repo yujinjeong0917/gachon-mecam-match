@@ -28,4 +28,19 @@
 
   --font-body: "YK Green Forest", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
   --font-accent: "KERIS Kedu", var(--font-body);
+
+  /*
+   * better-typography 원칙 5: 새 화면/컴포넌트는 이 스케일에서 골라 쓴다.
+   * 기존 화면 곳곳의 12~13px 매직넘버는 굳이 일괄 치환하지 않았다(시각적으로 이미
+   * 문제 없이 쓰이던 값이라 위험 대비 효과가 낮음) — 12px 미만으로 내려가는
+   * 값(11px 라벨 2곳)만 이번에 이 스케일로 교체했다.
+   */
+  --text-caption: 12px; /* 캡션, 배지, 작은 라벨 하한선 */
+  --text-sm: 13px; /* 보조 텍스트, 필드 라벨 */
+  --text-base: 14px; /* 본문 UI 텍스트 */
+  --text-md: 16px; /* 입력 필드(iOS 확대 방지 하한), 버튼, 바텀시트 제목 */
+  --text-lg: 18px; /* 카드 안 강조 텍스트 */
+  --text-xl: 20px; /* 화면 제목 */
+  --text-display: 30px; /* 랜딩 히어로 타이틀 */
+  --text-score: 56px; /* 매칭 점수 등 감정적 임팩트가 필요한 숫자 */
 }
