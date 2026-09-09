@@ -16,7 +16,7 @@ interface Partner {
 }
 
 interface LookupResult {
-  status: "not_found" | "waiting" | "pending_reveal" | "matched";
+  status: "not_found" | "waiting" | "pending_reveal" | "matched" | "rate_limited";
   matching_number?: string;
   match_score?: number;
   message?: string;
@@ -127,6 +127,10 @@ export function FindResultPage() {
       </form>
 
       {error ? <p className="find-result__error">{error}</p> : null}
+
+      {result?.status === "rate_limited" ? (
+        <p className="find-result__error">너무 여러 번 시도했어요. 10분 후 다시 시도해주세요.</p>
+      ) : null}
 
       {result?.status === "not_found" ? (
         <p className="find-result__error">
